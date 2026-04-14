@@ -1,0 +1,142 @@
+{% extends 'System/base.html' %}
+{% block title %}نتيجة الامتحان — A-To-Z{% endblock %}
+{% block extra_css %}
+<style>
+.result-hero {
+    padding: 60px 0;
+    text-align: center;
+    margin-bottom: 40px;
+}
+.score-circle {
+    width: 160px; height: 160px;
+    border-radius: 50%;
+    margin: 0 auto 24px;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    font-family: 'Outfit', 'Syne', sans-serif;
+    position: relative;
+}
+.score-circle.passed {
+    background: rgba(34,197,94,.1);
+    border: 4px solid rgba(34,197,94,.3);
+    box-shadow: 0 0 40px rgba(34,197,94,.15);
+}
+.score-circle.failed {
+    background: rgba(239,68,68,.08);
+    border: 4px solid rgba(239,68,68,.2);
+    box-shadow: 0 0 40px rgba(239,68,68,.1);
+}
+.score-value {
+    font-size: 2.8rem; font-weight: 900; line-height: 1;
+}
+.score-label { font-size: .8rem; font-weight: 600; margin-top: 4px; opacity: .7; }
+.answer-row {
+    display: flex; align-items: flex-start; gap: 14px;
+    padding: 18px 20px;
+    border-radius: var(--r-md);
+    margin-bottom: 10px;
+    border: 1px solid var(--border);
+}
+.answer-row.correct { background: rgba(34,197,94,.05); border-color: rgba(34,197,94,.2); }
+.answer-row.wrong { background: rgba(239,68,68,.04); border-color: rgba(239,68,68,.15); }
+.answer-icon {
+    width: 32px; height: 32px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1rem; flex-shrink: 0;
+}
+</style>
+{% endblock %}
+{% block content %}
+<div class="result-hero">
+    <div class="container" style="max-width:700px;">
+        <div class="score-circle {% if attempt.passed %}passed{% else %}failed{% endif %}">
+            <div class="score-value" style="color:{% if attempt.passed %}#16a34a{% else %}var(--danger){% endif %};">
+                {{ attempt.percentage|floatformat:0 }}%
+            </div>
+            <div class="score-label">
+                <span data-ar="النتيجة" data-en="Result">النتيجة</span>
+            </div>
+        </div>
+
+        <h1 style="font-family:'Syne','Cairo',sans-serif;font-weight:800;font-size:1.8rem;margin-bottom:10px;">
+            {% if attempt.passed %}
+                <span data-ar="🎉 تهانينا! اجتزت الامتحان" data-en="🎉 Congratulations! You passed the exam">🎉 تهانينا! اجتزت الامتحان</span>
+            {% else %}
+                <span data-ar="😔 لم تجتز الامتحان هذه المرة" data-en="😔 You didn't pass this time">😔 لم تجتز الامتحان هذه المرة</span>
+            {% endif %}
+        </h1>
+        <p style="color:var(--text-secondary);font-size:1rem;margin-bottom:28px;">
+            {{ attempt.exam.title }} — {{ attempt.exam.course.title }}
+        </p>
+
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;text-align:center;">
+            <div style="background:var(--bg-surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:20px;">
+                <div style="font-family:'Outfit','Syne',sans-serif;font-size:1.8rem;font-weight:800;color:var(--brand);">
+                    {{ attempt.score|floatformat:0 }}/{{ attempt.total_marks }}
+                </div>
+                <div style="font-size:.8rem;color:var(--text-muted);margin-top:4px;font-weight:600;">
+                    <span data-ar="الدرجة" data-en="Score">الدرجة</span>
+                </div>
+            </div>
+            <div style="background:var(--bg-surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:20px;">
+                <div style="font-family:'Outfit','Syne',sans-serif;font-size:1.8rem;font-weight:800;color:{% if attempt.passed %}#16a34a{% else %}var(--danger){% endif %};">
+                    {{ attempt.percentage|floatformat:0 }}%
+                </div>
+                <div style="font-size:.8rem;color:var(--text-muted);margin-top:4px;font-weight:600;">
+                    <span data-ar="النسبة المئوية" data-en="Percentage">النسبة المئوية</span>
+                </div>
+            </div>
+            <div style="background:var(--bg-surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:20px;">
+                <div style="font-family:'Outfit','Syne',sans-serif;font-size:1.8rem;font-weight:800;color:var(--accent);">
+                    {{ attempt.exam.pass_score }}%
+                </div>
+                <div style="font-size:.8rem;color:var(--text-muted);margin-top:4px;font-weight:600;">
+                    <span data-ar="درجة النجاح" data-en="Passing Score">درجة النجاح</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container pb-12" style="max-width:700px;">
+    <h2 style="font-family:'Syne','Cairo',sans-serif;font-weight:800;font-size:1.2rem;margin-bottom:20px;color:var(--text-primary);">
+        <i class="bi bi-clipboard-check" style="color:var(--brand);margin-inline-end:8px;"></i>
+        <span data-ar="مراجعة الإجابات" data-en="Review Answers">مراجعة الإجابات</span>
+    </h2>
+
+    {% for ans in answers %}
+    <div class="answer-row {% if ans.is_correct %}correct{% else %}wrong{% endif %}">
+        <div class="answer-icon" style="background:{% if ans.is_correct %}rgba(34,197,94,.15){% else %}rgba(239,68,68,.12){% endif %};color:{% if ans.is_correct %}#16a34a{% else %}var(--danger){% endif %};">
+            {% if ans.is_correct %}<i class="bi bi-check-lg"></i>{% else %}<i class="bi bi-x-lg"></i>{% endif %}
+        </div>
+        <div style="flex:1;min-width:0;">
+            <div style="font-weight:700;font-size:.9rem;color:var(--text-primary);margin-bottom:8px;">{{ ans.question.text }}</div>
+            <div style="display:flex;gap:16px;flex-wrap:wrap;font-size:.8rem;">
+                <span style="color:var(--text-muted);">
+                    <span data-ar="إجابتك:" data-en="Your answer:">إجابتك:</span> <strong style="color:{% if ans.is_correct %}#16a34a{% else %}var(--danger){% endif %};">
+                        {{ ans.answer }}
+                    </strong>
+                </span>
+                {% if not ans.is_correct %}
+                <span style="color:var(--text-muted);">
+                    <span data-ar="الصحيحة:" data-en="Correct:">الصحيحة:</span> <strong style="color:#16a34a;">{{ ans.question.correct_answer }}</strong>
+                </span>
+                {% endif %}
+            </div>
+        </div>
+        <div style="font-size:.8rem;font-weight:700;color:var(--text-muted);">
+            {{ ans.question.marks }} <span data-ar="درجة" data-en="Marks">درجة</span>
+        </div>
+    </div>
+    {% endfor %}
+
+    <div style="display:flex;gap:12px;margin-top:32px;flex-wrap:wrap;">
+        <a href="{% url 'course_detail' attempt.exam.course.pk %}" class="btn btn-primary btn-lg">
+            <i class="bi bi-arrow-right"></i> <span data-ar="العودة للكورس" data-en="Back to Course">العودة للكورس</span>
+        </a>
+        <a href="{% url 'student_grades' %}" class="btn btn-ghost btn-lg">
+            <i class="bi bi-bar-chart"></i> <span data-ar="سجل درجاتي" data-en="My Grades">سجل درجاتي</span>
+        </a>
+    </div>
+</div>
+{% endblock %}

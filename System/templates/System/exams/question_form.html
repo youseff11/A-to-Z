@@ -1,0 +1,211 @@
+{% extends 'System/base.html' %}
+{% block title %}{{ action }} سؤال — A-To-Z{% endblock %}
+{% block extra_css %}
+<style>
+.options-section { display: none; }
+.options-section.show { display: block; }
+</style>
+{% endblock %}
+{% block content %}
+<div class="container py-8" style="max-width:700px;">
+    <div style="margin-bottom:24px;">
+        <a href="{% url 'exam_edit' exam.pk %}" style="display:inline-flex;align-items:center;gap:6px;color:var(--text-muted);font-size:.875rem;font-weight:600;margin-bottom:12px;">
+            <i class="bi bi-arrow-right"></i> العودة للامتحان
+        </a>
+        <h1 style="font-family:'Syne','Cairo',sans-serif;font-weight:800;font-size:1.5rem;color:var(--text-primary);">
+            <i class="bi bi-question-circle" style="color:var(--brand);margin-inline-end:8px;"></i>
+            {{ action }} سؤال جديد
+        </h1>
+        <p style="color:var(--text-secondary);margin-top:4px;font-size:.875rem;">امتحان: <strong>{{ exam.title }}</strong></p>
+    </div>
+
+    <div class="card">
+        <div class="card-body" style="padding:32px;">
+            <form method="post" id="questionForm">
+                {% csrf_token %}
+
+                <div class="mb-4">
+                    <label style="display:block;font-weight:700;font-size:.875rem;color:var(--text-primary);margin-bottom:8px;">
+                        نوع السؤال <span style="color:var(--danger);">*</span>
+                    </label>
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;" id="typeSelector">
+                        <label style="cursor:pointer;">
+                            <input type="radio" name="question_type" value="mcq" checked style="display:none;" class="type-radio">
+                            <div class="type-card" style="padding:16px;border:2px solid var(--brand);border-radius:var(--r-md);text-align:center;background:rgba(14,165,233,.06);">
+                                <div style="font-size:1.5rem;margin-bottom:6px;">🔡</div>
+                                <div style="font-weight:700;font-size:.875rem;">اختيار من متعدد</div>
+                            </div>
+                        </label>
+                        <label style="cursor:pointer;">
+                            <input type="radio" name="question_type" value="true_false" style="display:none;" class="type-radio">
+                            <div class="type-card" style="padding:16px;border:2px solid var(--border);border-radius:var(--r-md);text-align:center;">
+                                <div style="font-size:1.5rem;margin-bottom:6px;">✅</div>
+                                <div style="font-weight:700;font-size:.875rem;">صح أو خطأ</div>
+                            </div>
+                        </label>
+                    </div>
+                    <input type="hidden" name="question_type" id="q_type_hidden" value="mcq">
+                </div>
+
+                <div class="mb-4">
+                    <label style="display:block;font-weight:700;font-size:.875rem;color:var(--text-primary);margin-bottom:8px;">
+                        نص السؤال <span style="color:var(--danger);">*</span>
+                    </label>
+                    <textarea name="text" class="form-control" rows="3" placeholder="اكتب نص السؤال هنا..." required></textarea>
+                </div>
+
+                <div id="mcqOptions" class="options-section show">
+                    <div style="font-weight:700;font-size:.875rem;color:var(--text-primary);margin-bottom:12px;">الاختيارات</div>
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;">
+                        <div>
+                            <label style="font-size:.8rem;font-weight:600;color:var(--text-secondary);margin-bottom:4px;display:block;">الاختيار أ</label>
+                            <div style="display:flex;align-items:center;gap:8px;">
+                                <span style="width:28px;height:28px;border-radius:50%;background:rgba(14,165,233,.1);color:var(--brand);font-weight:800;font-size:.8rem;display:flex;align-items:center;justify-content:center;flex-shrink:0;">أ</span>
+                                <input type="text" name="option_a" class="form-control" placeholder="...">
+                            </div>
+                        </div>
+                        <div>
+                            <label style="font-size:.8rem;font-weight:600;color:var(--text-secondary);margin-bottom:4px;display:block;">الاختيار ب</label>
+                            <div style="display:flex;align-items:center;gap:8px;">
+                                <span style="width:28px;height:28px;border-radius:50%;background:rgba(124,58,237,.1);color:#7c3aed;font-weight:800;font-size:.8rem;display:flex;align-items:center;justify-content:center;flex-shrink:0;">ب</span>
+                                <input type="text" name="option_b" class="form-control" placeholder="...">
+                            </div>
+                        </div>
+                        <div>
+                            <label style="font-size:.8rem;font-weight:600;color:var(--text-secondary);margin-bottom:4px;display:block;">الاختيار ج</label>
+                            <div style="display:flex;align-items:center;gap:8px;">
+                                <span style="width:28px;height:28px;border-radius:50%;background:rgba(34,197,94,.1);color:#16a34a;font-weight:800;font-size:.8rem;display:flex;align-items:center;justify-content:center;flex-shrink:0;">ج</span>
+                                <input type="text" name="option_c" class="form-control" placeholder="...">
+                            </div>
+                        </div>
+                        <div>
+                            <label style="font-size:.8rem;font-weight:600;color:var(--text-secondary);margin-bottom:4px;display:block;">الاختيار د</label>
+                            <div style="display:flex;align-items:center;gap:8px;">
+                                <span style="width:28px;height:28px;border-radius:50%;background:rgba(249,115,22,.1);color:var(--accent);font-weight:800;font-size:.8rem;display:flex;align-items:center;justify-content:center;flex-shrink:0;">د</span>
+                                <input type="text" name="option_d" class="form-control" placeholder="...">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label style="display:block;font-weight:700;font-size:.875rem;color:var(--text-primary);margin-bottom:8px;">
+                            الإجابة الصحيحة <span style="color:var(--danger);">*</span>
+                        </label>
+                        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;" id="mcqCorrectOptions">
+                            <label style="cursor:pointer;text-align:center;">
+                                <input type="radio" name="correct_answer" value="A" style="display:none;" class="correct-radio" required>
+                                <div class="answer-opt" style="padding:10px;border:2px solid var(--border);border-radius:var(--r-sm);font-weight:800;transition:all var(--t);">A<br><small style="font-weight:400;color:var(--text-muted);">أ</small></div>
+                            </label>
+                            <label style="cursor:pointer;text-align:center;">
+                                <input type="radio" name="correct_answer" value="B" style="display:none;" class="correct-radio">
+                                <div class="answer-opt" style="padding:10px;border:2px solid var(--border);border-radius:var(--r-sm);font-weight:800;transition:all var(--t);">B<br><small style="font-weight:400;color:var(--text-muted);">ب</small></div>
+                            </label>
+                            <label style="cursor:pointer;text-align:center;">
+                                <input type="radio" name="correct_answer" value="C" style="display:none;" class="correct-radio">
+                                <div class="answer-opt" style="padding:10px;border:2px solid var(--border);border-radius:var(--r-sm);font-weight:800;transition:all var(--t);">C<br><small style="font-weight:400;color:var(--text-muted);">ج</small></div>
+                            </label>
+                            <label style="cursor:pointer;text-align:center;">
+                                <input type="radio" name="correct_answer" value="D" style="display:none;" class="correct-radio">
+                                <div class="answer-opt" style="padding:10px;border:2px solid var(--border);border-radius:var(--r-sm);font-weight:800;transition:all var(--t);">D<br><small style="font-weight:400;color:var(--text-muted);">د</small></div>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="tfOptions" class="options-section">
+                    <div class="mb-4">
+                        <label style="display:block;font-weight:700;font-size:.875rem;color:var(--text-primary);margin-bottom:8px;">
+                            الإجابة الصحيحة <span style="color:var(--danger);">*</span>
+                        </label>
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+                            <label style="cursor:pointer;text-align:center;">
+                                <input type="radio" name="correct_answer" value="TRUE" style="display:none;" class="tf-radio">
+                                <div class="answer-opt-tf" style="padding:16px;border:2px solid var(--border);border-radius:var(--r-md);font-weight:800;font-size:1.1rem;transition:all var(--t);">
+                                    ✅ صح
+                                </div>
+                            </label>
+                            <label style="cursor:pointer;text-align:center;">
+                                <input type="radio" name="correct_answer" value="FALSE" style="display:none;" class="tf-radio">
+                                <div class="answer-opt-tf" style="padding:16px;border:2px solid var(--border);border-radius:var(--r-md);font-weight:800;font-size:1.1rem;transition:all var(--t);">
+                                    ❌ خطأ
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:28px;">
+                    <div>
+                        <label style="display:block;font-weight:700;font-size:.875rem;color:var(--text-primary);margin-bottom:8px;">الدرجة</label>
+                        <input type="number" name="marks" class="form-control" value="1" min="1" required>
+                    </div>
+                    <div>
+                        <label style="display:block;font-weight:700;font-size:.875rem;color:var(--text-primary);margin-bottom:8px;">الترتيب</label>
+                        <input type="number" name="order" class="form-control" value="{{ exam.questions.count }}" min="0">
+                    </div>
+                </div>
+
+                <div style="display:flex;gap:12px;">
+                    <button type="submit" class="btn btn-primary btn-lg" style="flex:1;">
+                        <i class="bi bi-check-lg"></i> حفظ السؤال
+                    </button>
+                    <a href="{% url 'exam_edit' exam.pk %}" class="btn btn-ghost btn-lg">إلغاء</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const typeRadios = document.querySelectorAll('.type-radio');
+    const mcqSection = document.getElementById('mcqOptions');
+    const tfSection = document.getElementById('tfOptions');
+    const typeCards = document.querySelectorAll('.type-card');
+    const hiddenType = document.getElementById('q_type_hidden');
+
+    typeRadios.forEach(radio => {
+        radio.addEventListener('change', function() {
+            hiddenType.value = this.value;
+            typeCards.forEach(c => {
+                c.style.borderColor = 'var(--border)';
+                c.style.background = 'transparent';
+            });
+            this.nextElementSibling.style.borderColor = 'var(--brand)';
+            this.nextElementSibling.style.background = 'rgba(14,165,233,.06)';
+
+            if (this.value === 'mcq') {
+                mcqSection.classList.add('show');
+                tfSection.classList.remove('show');
+            } else {
+                tfSection.classList.add('show');
+                mcqSection.classList.remove('show');
+            }
+        });
+    });
+
+    // تحديث مظهر الإجابة الصحيحة
+    document.querySelectorAll('.correct-radio, .tf-radio').forEach(radio => {
+        radio.addEventListener('change', function() {
+            const group = this.closest('div[style*="grid"]');
+            group.querySelectorAll('.answer-opt, .answer-opt-tf').forEach(el => {
+                el.style.borderColor = 'var(--border)';
+                el.style.background = 'transparent';
+                el.style.color = 'var(--text-primary)';
+            });
+            const card = this.nextElementSibling;
+            card.style.borderColor = 'var(--success)';
+            card.style.background = 'rgba(34,197,94,.08)';
+            card.style.color = '#16a34a';
+        });
+    });
+
+    // اسم الحقل الخفي لـ question_type
+    const form = document.getElementById('questionForm');
+    form.addEventListener('submit', function() {
+        const existing = form.querySelector('input[name="question_type"]:not(#q_type_hidden)');
+        if (existing) existing.remove();
+    });
+});
+</script>
+{% endblock %}

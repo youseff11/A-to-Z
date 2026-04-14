@@ -1,0 +1,268 @@
+{% extends 'System/base.html' %}
+{% block title %}{{ action }} Course — A-To-Z{% endblock %}
+
+{% block extra_css %}
+<style>
+/* ==========================================================================
+   PAGE HEADER
+   ========================================================================== */
+.form-header-bg {
+    background: linear-gradient(180deg, var(--bg-surface) 0%, var(--bg-base) 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 48px 0 40px;
+    margin-bottom: 40px;
+}
+
+.form-page-title {
+    font-family: 'Syne', 'Cairo', 'Alexandria', sans-serif;
+    font-weight: 800;
+    font-size: clamp(1.8rem, 3vw, 2.2rem);
+    letter-spacing: -0.02em;
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.icon-wrapper-header {
+    width: 48px;
+    height: 48px;
+    background: rgba(14,165,233,0.1);
+    color: var(--brand);
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4rem;
+}
+
+/* ==========================================================================
+   FORM SECTIONS
+   ========================================================================== */
+.form-section {
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: var(--r-xl);
+    padding: 32px;
+    margin-bottom: 24px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.02);
+    transition: all 0.3s ease;
+}
+
+.form-section:hover {
+    box-shadow: 0 10px 30px rgba(0,0,0,0.04);
+    border-color: rgba(14,165,233,0.15);
+}
+
+.form-section-title {
+    font-family: 'Alexandria', sans-serif;
+    font-size: 1.15rem;
+    font-weight: 800;
+    color: var(--text-primary);
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border);
+}
+
+.form-section-title i {
+    color: var(--brand);
+    font-size: 1.3rem;
+}
+
+/* ==========================================================================
+   CUSTOM INPUTS (UPLOAD & CARDS)
+   ========================================================================== */
+.upload-zone {
+    border: 2px dashed var(--border-strong);
+    border-radius: var(--r-md);
+    padding: 40px 24px;
+    text-align: center;
+    background: var(--bg-muted);
+    transition: all 0.3s ease;
+}
+
+.upload-zone:hover, .upload-zone:focus-within {
+    border-color: var(--brand);
+    background: rgba(14,165,233,0.03);
+}
+
+.upload-zone input[type="file"] {
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    max-width: 100%;
+    margin-top: 16px;
+}
+
+.checkbox-card {
+    border: 1px solid var(--border-strong);
+    border-radius: var(--r-md);
+    padding: 16px 20px;
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    background: var(--bg-muted);
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.checkbox-card:hover {
+    border-color: var(--brand);
+    background: rgba(14,165,233,0.03);
+}
+
+/* التأثير لما يكون الـ Checkbox متعلم عليه */
+.checkbox-card:has(input[type="checkbox"]:checked) {
+    border-color: var(--brand);
+    background: rgba(14,165,233,0.08);
+    box-shadow: 0 4px 12px rgba(14,165,233,0.1);
+}
+
+.checkbox-card input[type="checkbox"] {
+    width: 22px;
+    height: 22px;
+    margin-top: 2px;
+    accent-color: var(--brand);
+    cursor: pointer;
+}
+
+.checkbox-card-title {
+    font-weight: 700;
+    font-size: 1rem;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+}
+
+.checkbox-card-desc {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    line-height: 1.5;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="form-header-bg">
+    <div class="container-sm">
+        <h1 class="form-page-title">
+            <div class="icon-wrapper-header">
+                <i class="bi bi-book-half"></i>
+            </div>
+            <span>{{ action }} <span data-ar="كورس" data-en="Course">كورس</span></span>
+        </h1>
+        <p class="text-secondary mt-2" style="font-size: 0.95rem;" data-ar="قم بملء البيانات التالية بدقة لتقديم محتوى احترافي لطلابك." data-en="Fill in the following details accurately to provide professional content to your students.">
+            قم بملء البيانات التالية بدقة لتقديم محتوى احترافي لطلابك.
+        </p>
+    </div>
+</div>
+
+<div class="container-sm pb-12">
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        {% if form.errors %}
+        <div class="alert alert-danger mb-6">
+            <i class="bi bi-exclamation-triangle-fill" style="font-size: 1.4rem;"></i>
+            <div>
+                <strong data-ar="يرجى مراجعة الأخطاء التالية:" data-en="Please review the following errors:">يرجى مراجعة الأخطاء التالية:</strong>
+                <ul style="margin-top: 8px; margin-inline-start: 16px; font-size: 0.9rem;">
+                    {% for field in form %}
+                        {% for error in field.errors %}
+                            <li><strong>{{ field.label }}:</strong> {{ error }}</li>
+                        {% endfor %}
+                    {% endfor %}
+                    {% for error in form.non_field_errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+        {% endif %}
+
+        <div class="form-section">
+            <div class="form-section-title">
+                <i class="bi bi-info-square-fill"></i>
+                <span data-ar="المعلومات الأساسية" data-en="Basic Information">المعلومات الأساسية</span>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label" data-ar="عنوان الكورس *" data-en="Course Title *">عنوان الكورس *</label>
+                {{ form.title }}
+            </div>
+            
+            <div class="form-group" style="margin-bottom: 0;">
+                <label class="form-label" data-ar="وصف الكورس *" data-en="Course Description *">وصف الكورس *</label>
+                {{ form.description }}
+            </div>
+        </div>
+
+        <div class="form-section">
+            <div class="form-section-title">
+                <i class="bi bi-image-fill"></i>
+                <span data-ar="الميديا والغلاف" data-en="Media & Thumbnail">الميديا والغلاف</span>
+            </div>
+            
+            <div class="form-group" style="margin-bottom: 0;">
+                <label class="form-label" data-ar="صورة الغلاف (Thumbnail)" data-en="Thumbnail Image">صورة الغلاف (Thumbnail)</label>
+                <div class="upload-zone">
+                    <i class="bi bi-cloud-arrow-up-fill text-brand" style="font-size: 2.5rem; opacity: 0.8;"></i>
+                    <div style="font-weight: 600; margin-top: 12px; color: var(--text-primary);" data-ar="اختر صورة من جهازك" data-en="Choose an image from your device">اختر صورة من جهازك</div>
+                    <p class="text-muted text-sm mt-2" data-ar="يفضل استخدام صور بجودة عالية وأبعاد 16:9 للحصول على أفضل مظهر." data-en="High-quality images with a 16:9 aspect ratio are recommended.">يفضل استخدام صور بجودة عالية وأبعاد 16:9 للحصول على أفضل مظهر.</p>
+                    <div style="max-width: 300px; margin: 0 auto;">
+                        {{ form.thumbnail }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-section">
+            <div class="form-section-title">
+                <i class="bi bi-tag-fill"></i>
+                <span data-ar="التسعير والنشر" data-en="Pricing & Visibility">التسعير والنشر</span>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label" data-ar="سعر الكورس (جنيه)" data-en="Price (EGP)">سعر الكورس (جنيه)</label>
+                <div style="max-width: 250px;">
+                    {{ form.price }}
+                </div>
+                <div class="text-xs text-muted mt-2" data-ar="اترك السعر 0 إذا كنت ستجعله مجانياً." data-en="Leave as 0 if the course will be free.">اترك السعر 0 إذا كنت ستجعله مجانياً.</div>
+            </div>
+
+            <div class="grid grid-2 mt-6">
+                <label class="checkbox-card">
+                    {{ form.is_free }}
+                    <div>
+                        <div class="checkbox-card-title" data-ar="كورس مجاني" data-en="Free Course">كورس مجاني</div>
+                        <div class="checkbox-card-desc" data-ar="سيتمكن أي طالب من الانضمام للكورس ومشاهدة المحتوى بدون دفع أي رسوم." data-en="Any student can join and access the content without paying fees.">
+                            سيتمكن أي طالب من الانضمام للكورس ومشاهدة المحتوى بدون دفع أي رسوم.
+                        </div>
+                    </div>
+                </label>
+
+                <label class="checkbox-card">
+                    {{ form.is_published }}
+                    <div>
+                        <div class="checkbox-card-title" data-ar="نشر الكورس" data-en="Publish Course">نشر الكورس</div>
+                        <div class="checkbox-card-desc" data-ar="إتاحة الكورس للظهور في الصفحة الرئيسية ونتائج البحث للطلاب." data-en="Make the course visible on the homepage and search results for students.">
+                            إتاحة الكورس للظهور في الصفحة الرئيسية ونتائج البحث للطلاب.
+                        </div>
+                    </div>
+                </label>
+            </div>
+        </div>
+
+        <div style="display:flex; gap:16px; margin-top:32px; padding-top: 24px; border-top: 1px solid var(--border);">
+            <button type="submit" class="btn btn-primary btn-lg" style="min-width: 200px;">
+                <i class="bi bi-check-circle-fill"></i> <span style="margin-inline-start: 4px;">{{ action }} <span data-ar="الكورس" data-en="Course">الكورس</span></span>
+            </button>
+            <a href="{% url 'dashboard' %}" class="btn btn-ghost btn-lg">
+                <span data-ar="إلغاء والعودة" data-en="Cancel & Return">إلغاء والعودة</span>
+            </a>
+        </div>
+    </form>
+</div>
+{% endblock %}

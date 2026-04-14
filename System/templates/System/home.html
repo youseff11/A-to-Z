@@ -1,0 +1,831 @@
+{% extends 'System/base.html' %}
+{% block title %}A-To-Z — تعلّم بلا حدود{% endblock %}
+
+{% block extra_css %}
+<style>
+/* ==========================================================================
+   HERO SECTION
+   ========================================================================== */
+.hero {
+    position: relative;
+    overflow: hidden;
+    padding: 100px 0 80px;
+    background: var(--bg-surface);
+    border-bottom: 1px solid var(--border);
+}
+
+.hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+        radial-gradient(ellipse 80% 60% at 60% -10%, rgba(14,165,233,.12) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 50% at 100% 80%, rgba(124,58,237,.08) 0%, transparent 55%);
+    pointer-events: none;
+    z-index: 0;
+}
+
+[data-theme="dark"] .hero::before {
+    background:
+        radial-gradient(ellipse 80% 60% at 60% -10%, rgba(14,165,233,.18) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 50% at 100% 80%, rgba(124,58,237,.15) 0%, transparent 55%);
+}
+
+.hero-grid-bg {
+    position: absolute;
+    inset: 0;
+    background-image:
+        linear-gradient(var(--border) 1px, transparent 1px),
+        linear-gradient(90deg, var(--border) 1px, transparent 1px);
+    background-size: 48px 48px;
+    mask-image: radial-gradient(ellipse 90% 80% at 50% 0%, black 30%, transparent 80%);
+    -webkit-mask-image: radial-gradient(ellipse 90% 80% at 50% 0%, black 30%, transparent 80%);
+    pointer-events: none;
+    opacity: 0.7;
+}
+
+.hero-inner {
+    position: relative;
+    z-index: 1;
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 0 24px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 64px;
+    align-items: center;
+}
+
+@media (max-width: 768px) {
+    .hero-inner { grid-template-columns: 1fr; gap: 48px; }
+    .hero-visual { display: none; }
+    .hero { padding: 80px 0 64px; }
+}
+
+.hero-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 16px;
+    border-radius: 99px;
+    background: rgba(14,165,233,.08);
+    color: var(--brand);
+    font-size: .85rem;
+    font-weight: 700;
+    letter-spacing: .02em;
+    margin-bottom: 24px;
+    border: 1px solid rgba(14,165,233,.15);
+    backdrop-filter: blur(8px);
+}
+
+.hero-title {
+    font-family: 'Syne', 'Cairo', sans-serif;
+    font-size: clamp(2.2rem, 4.5vw, 3.5rem);
+    font-weight: 800;
+    line-height: 1.2;
+    letter-spacing: -.03em;
+    color: var(--text-primary);
+    margin-bottom: 24px;
+}
+
+.hero-title .highlight {
+    color: var(--brand);
+    position: relative;
+    display: inline-block;
+}
+
+.hero-title .highlight::after {
+    content: '';
+    position: absolute;
+    bottom: 4px;
+    left: 0; right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--brand), transparent);
+    border-radius: 2px;
+    opacity: .4;
+}
+
+.hero-desc {
+    font-size: 1.1rem;
+    color: var(--text-secondary);
+    margin-bottom: 36px;
+    line-height: 1.8;
+    max-width: 500px;
+}
+
+.hero-actions { 
+    display: flex; 
+    gap: 16px; 
+    flex-wrap: wrap; 
+}
+
+.hero-stats {
+    display: flex;
+    gap: 32px;
+    margin-top: 48px;
+    padding-top: 32px;
+    border-top: 1px solid rgba(14,165,233,.15);
+}
+
+.hero-stat-item { text-align: start; }
+
+.hero-stat-num {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.75rem;
+    font-weight: 800;
+    color: var(--text-primary);
+    letter-spacing: -.03em;
+    line-height: 1;
+}
+
+.hero-stat-label { 
+    font-size: .85rem; 
+    color: var(--text-muted); 
+    font-weight: 500; 
+    margin-top: 6px; 
+}
+
+.stat-divider {
+    width: 1px;
+    background: var(--border);
+    opacity: 0.6;
+}
+
+/* ==========================================================================
+   HERO VISUAL & DASHBOARD CARD
+   ========================================================================== */
+.hero-visual {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.hero-card-stack {
+    position: relative;
+    width: 100%;
+    max-width: 420px;
+    perspective: 1000px;
+}
+
+.hero-card-main {
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: var(--r-xl);
+    padding: 32px;
+    box-shadow: 0 20px 40px -10px rgba(0,0,0,0.08);
+    position: relative;
+    z-index: 2;
+    transform: translateZ(20px);
+}
+
+.hero-card-back {
+    position: absolute;
+    top: -16px;
+    left: 16px; 
+    right: -16px;
+    background: var(--bg-subtle);
+    border: 1px solid var(--border);
+    border-radius: var(--r-xl);
+    height: 100%;
+    z-index: 1;
+    opacity: 0.6;
+}
+
+.dashboard-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 24px;
+}
+
+.dashboard-title {
+    font-weight: 700;
+    font-size: 1.05rem;
+    color: var(--text-primary);
+}
+
+.dashboard-subtitle {
+    font-size: .8rem;
+    color: var(--text-muted);
+    margin-top: 4px;
+}
+
+.dashboard-icon {
+    width: 38px;
+    height: 38px;
+    background: linear-gradient(135deg, var(--brand), #7c3aed);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 1rem;
+    box-shadow: 0 4px 12px rgba(124,58,237,0.2);
+}
+
+.hero-course-item {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px;
+    border-radius: var(--r-md);
+    transition: all 0.3s ease;
+    border: 1px solid transparent;
+}
+
+.hero-course-item:hover { 
+    background: var(--bg-subtle); 
+    border-color: var(--border);
+    transform: translateX(-4px);
+}
+
+.course-icon-box {
+    width: 46px;
+    height: 46px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    flex-shrink: 0;
+}
+
+.course-item-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.course-item-title {
+    font-weight: 600;
+    font-size: .9rem;
+    color: var(--text-primary);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    margin-bottom: 2px;
+}
+
+.course-item-teacher {
+    font-size: .8rem;
+    color: var(--text-muted);
+}
+
+.course-item-arrow {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: .75rem;
+    color: var(--brand);
+    flex-shrink: 0;
+    transition: transform 0.3s ease;
+}
+
+.hero-course-item:hover .course-item-arrow {
+    transform: translateX(-4px);
+    background: var(--brand);
+    color: white;
+}
+
+/* Skeleton Loading styles */
+.skeleton-bar {
+    height: 10px;
+    background: var(--border);
+    border-radius: 4px;
+    margin-bottom: 6px;
+}
+.skeleton-bar.w-70 { width: 70%; }
+.skeleton-bar.w-45 { width: 45%; }
+
+/* Floating Badges */
+.floating-badge {
+    position: absolute;
+    background: rgba(var(--bg-surface-rgb, 255,255,255), 0.9);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 12px 18px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: .85rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    white-space: nowrap;
+    animation: float 4s ease-in-out infinite;
+    z-index: 10;
+}
+
+[data-theme="dark"] .floating-badge {
+    background: rgba(var(--bg-surface-rgb, 30,30,30), 0.8);
+}
+
+@keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+}
+
+.floating-badge.pos-1 { top: -20px; right: -30px; animation-delay: 0s; }
+.floating-badge.pos-2 { bottom: 30px; left: -40px; animation-delay: 2s; }
+
+/* ==========================================================================
+   FEATURES SECTION
+   ========================================================================== */
+.features-section { padding: 96px 0; }
+
+.section-header-centered {
+    text-align: center;
+    margin-bottom: 56px;
+}
+
+.section-main-title {
+    font-family: 'Syne', 'Cairo', sans-serif;
+    font-size: clamp(1.8rem, 3vw, 2.4rem);
+    font-weight: 800;
+    letter-spacing: -.03em;
+    color: var(--text-primary);
+    margin-top: 16px;
+}
+
+.feature-card {
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: var(--r-xl);
+    padding: 32px;
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    position: relative;
+    overflow: hidden;
+    z-index: 1;
+}
+
+.feature-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 4px;
+    opacity: 0;
+    transition: opacity 0.4s ease;
+}
+
+.feature-card:hover { 
+    box-shadow: 0 20px 40px -10px rgba(0,0,0,0.08); 
+    transform: translateY(-6px); 
+    border-color: rgba(14,165,233,.2); 
+}
+
+.feature-card:hover::before { opacity: 1; }
+.feature-card.f1::before { background: linear-gradient(90deg, var(--brand), #38bdf8); }
+.feature-card.f2::before { background: linear-gradient(90deg, #7c3aed, #a78bfa); }
+.feature-card.f3::before { background: linear-gradient(90deg, var(--success), #4ade80); }
+
+.feature-icon-wrapper {
+    width: 60px;
+    height: 60px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.6rem;
+    margin-bottom: 24px;
+    transition: transform 0.3s ease;
+}
+
+.feature-card:hover .feature-icon-wrapper {
+    transform: scale(1.1);
+}
+
+.feature-title {
+    font-family: 'Syne', 'Cairo', sans-serif;
+    font-weight: 700;
+    font-size: 1.15rem;
+    margin-bottom: 12px;
+    color: var(--text-primary);
+}
+
+.feature-desc { 
+    font-size: .95rem; 
+    color: var(--text-secondary); 
+    line-height: 1.7; 
+}
+
+/* ==========================================================================
+   COURSES SECTION
+   ========================================================================== */
+.courses-section { padding: 0 0 96px; }
+
+.section-header-flex {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    margin-bottom: 40px;
+}
+
+.section-subtitle {
+    color: var(--text-muted);
+    font-size: .95rem;
+    margin-top: 8px;
+}
+
+.course-card-pro {
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: var(--r-xl);
+    overflow: hidden;
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    display: flex;
+    flex-direction: column;
+}
+
+.course-card-pro:hover { 
+    box-shadow: 0 20px 40px -10px rgba(0,0,0,0.08); 
+    transform: translateY(-6px); 
+    border-color: rgba(14,165,233,.25); 
+}       
+
+.course-thumb-container {
+    overflow: hidden;
+    position: relative;
+}
+
+.course-thumb {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.6s ease;
+}
+
+.course-card-pro:hover .course-thumb {
+    transform: scale(1.05);
+}
+
+.course-thumb-placeholder {
+    width: 100%;
+    height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 3rem;
+    opacity: .8;
+}
+
+.course-card-body { 
+    padding: 24px; 
+    flex: 1; 
+    display: flex; 
+    flex-direction: column; 
+}
+
+.course-meta {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.teacher-mini {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+}
+.teacher-avatar-sm {
+    width: 28px;
+    height: 28px;
+    border-radius: 8px; /* أو 50% لو تحبها دائرية تماماً */
+    object-fit: cover;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    /* باقي تنسيقاتك الموجودة مسبقاً */
+}
+.teacher-avatar-sm {
+    background: linear-gradient(135deg, var(--brand), #7c3aed);
+    color: #fff;
+    font-size: .8rem;
+    font-weight: 700;
+    flex-shrink: 0;
+}
+
+.teacher-name {
+    font-size: .85rem;
+    color: var(--text-muted);
+    font-weight: 600;
+}
+
+.course-title-pro {
+    font-family: 'Syne', 'Cairo', sans-serif;
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: var(--text-primary);
+    margin-bottom: 12px;
+    line-height: 1.4;
+}
+
+.course-desc-pro {
+    font-size: .9rem;
+    color: var(--text-secondary);
+    line-height: 1.6;
+    flex: 1;
+    margin-bottom: 20px;
+}
+
+.course-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: 16px;
+    border-top: 1px solid var(--border);
+}
+
+.course-price-pro {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 1.2rem;
+    color: var(--brand);
+}
+
+.course-currency {
+    font-size: .8rem;
+    font-weight: 600;
+    color: var(--text-muted);
+}
+
+/* ==========================================================================
+   CTA SECTION
+   ========================================================================== */
+.cta-section {
+    padding: 100px 0;
+    background: var(--bg-subtle);
+    border-top: 1px solid var(--border);
+    position: relative;
+    overflow: hidden;
+}
+
+.cta-inner {
+    max-width: 680px;
+    margin: 0 auto;
+    text-align: center;
+    padding: 0 24px;
+    position: relative;
+    z-index: 2;
+}
+
+.cta-title {
+    font-family: 'Syne', 'Cairo', sans-serif;
+    font-size: clamp(1.8rem, 4vw, 2.6rem);
+    font-weight: 800;
+    letter-spacing: -.03em;
+    margin-bottom: 16px;
+    color: var(--text-primary);
+}
+
+.cta-desc {
+    color: var(--text-secondary);
+    margin-bottom: 40px;
+    font-size: 1.05rem;
+    line-height: 1.8;
+}
+
+.cta-actions {
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+
+<section class="hero">
+    <div class="hero-grid-bg"></div>
+    <div class="hero-inner">
+        <div>
+            <div class="hero-eyebrow">
+                <span class="live-dot"></span>
+                <span data-ar="منصة التعليم الأول في مصر" data-en="Egypt's #1 Learning Platform">منصة التعليم الأول في مصر</span>
+            </div>
+            <h1 class="hero-title">
+                <span data-ar="تعلّم من" data-en="Learn from">تعلّم من</span>
+                <br>
+                <span class="highlight" data-ar="أفضل المدرسين" data-en="The Best Teachers">أفضل المدرسين</span>
+            </h1>
+            <p class="hero-desc" data-ar="منصة A-To-Z تربطك بالمدرسين المتميزين، تشترك في الكورسات، تحضر اجتماعات أونلاين مباشرة، وتحصل على كل المواد التعليمية في مكان واحد." data-en="A-To-Z connects you with top teachers. Subscribe to courses, join live online meetings, and access all learning materials in one place.">
+                منصة A-To-Z تربطك بالمدرسين المتميزين، تشترك في الكورسات، تحضر اجتماعات أونلاين مباشرة، وتحصل على كل المواد التعليمية في مكان واحد.
+            </p>
+            <div class="hero-actions">
+                <a href="{% url 'course_list' %}" class="btn btn-primary btn-lg">
+                    <i class="bi bi-grid-1x2-fill"></i>
+                    <span data-ar="تصفح الكورسات" data-en="Browse Courses">تصفح الكورسات</span>
+                </a>
+                {% if not user.is_authenticated %}
+                <a href="{% url 'register' %}" class="btn btn-ghost btn-lg">
+                    <span data-ar="إنشاء حساب مجاني" data-en="Create Free Account">إنشاء حساب مجاني</span>
+                    <i class="bi bi-arrow-left"></i>
+                </a>
+                {% endif %}
+            </div>
+
+        </div>
+
+        <div class="hero-visual">
+            <div class="hero-card-stack">
+                <div class="hero-card-back"></div>
+                <div class="hero-card-main">
+                    <div class="dashboard-header">
+                        <div>
+                            <div class="dashboard-title" data-ar="كورساتي" data-en="My Courses">كورساتي</div>
+                            <div class="dashboard-subtitle" data-ar="٣ كورسات نشطة" data-en="3 Active Courses">٣ كورسات نشطة</div>
+                        </div>
+                        <div class="dashboard-icon">
+                            <i class="bi bi-mortarboard-fill"></i>
+                        </div>
+                    </div>
+                    
+                    {% for course in courses %}
+                    <div class="hero-course-item">
+                        <div class="course-icon-box" style="background:{% cycle 'rgba(14,165,233,.12)' 'rgba(124,58,237,.12)' 'rgba(34,197,94,.12)' %}; color:{% cycle 'var(--brand)' '#7c3aed' 'var(--success)' %};">
+                            <i class="bi bi-{% cycle 'book-fill' 'camera-video-fill' 'journal-text' %}"></i>
+                        </div>
+                        <div class="course-item-info">
+                            <div class="course-item-title">{{ course.title }}</div>
+                            <div class="course-item-teacher">{{ course.teacher.get_full_name }}</div>
+                        </div>
+                        <div class="course-item-arrow">
+                            <i class="bi bi-arrow-left"></i>
+                        </div>
+                    </div>
+                    {% empty %}
+                    {% for i in "123" %}
+                    <div class="hero-course-item">
+                        <div class="course-icon-box" style="background:{% cycle 'rgba(14,165,233,.12)' 'rgba(124,58,237,.12)' 'rgba(34,197,94,.12)' %}; color:{% cycle 'var(--brand)' '#7c3aed' 'var(--success)' %};">
+                            <i class="bi bi-{% cycle 'book-fill' 'camera-video-fill' 'journal-text' %}"></i>
+                        </div>
+                        <div class="course-item-info">
+                            <div class="skeleton-bar w-70"></div>
+                            <div class="skeleton-bar w-45"></div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                    {% endfor %}
+                </div>
+                
+                <div class="floating-badge pos-1">
+                    <i class="bi bi-camera-video-fill" style="color:var(--brand);"></i>
+                    <span data-ar="اجتماع مباشر الآن" data-en="Live Meeting Now">اجتماع مباشر الآن</span>
+                    <span class="live-dot"></span>
+                </div>
+                <div class="floating-badge pos-2">
+                    <i class="bi bi-people-fill" style="color:var(--success);"></i>
+                    <span data-ar="+١٢ طالب منضم" data-en="+12 Students Joined">+١٢ طالب منضم</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="features-section">
+    <div class="container">
+        <div class="section-header-centered">
+            <div class="hero-eyebrow">
+                <span data-ar="المميزات" data-en="Features">المميزات</span>
+            </div>
+            <h2 class="section-main-title">
+                <span data-ar="كل ما تحتاجه في مكان واحد" data-en="Everything You Need in One Place">كل ما تحتاجه في مكان واحد</span>
+            </h2>
+        </div>
+        
+        <div class="grid grid-3">
+            <div class="feature-card f1">
+                <div class="feature-icon-wrapper" style="background:rgba(14,165,233,.1);color:var(--brand);">
+                    <i class="bi bi-camera-video-fill"></i>
+                </div>
+                <div class="feature-title" data-ar="اجتماعات أونلاين مدمجة" data-en="Built-in Online Meetings">اجتماعات أونلاين مدمجة</div>
+                <div class="feature-desc" data-ar="تواصل مع مدرسك مباشرة عبر نظام الاجتماعات المدمج — بدون تطبيقات خارجية، مع مشاركة الشاشة والمحادثة النصية." data-en="Connect with your teacher directly via the built-in meeting system — no external apps, with screen sharing and text chat.">
+                    تواصل مع مدرسك مباشرة عبر نظام الاجتماعات المدمج — بدون تطبيقات خارجية، مع مشاركة الشاشة والمحادثة النصية.
+                </div>
+            </div>
+            
+            <div class="feature-card f2">
+                <div class="feature-icon-wrapper" style="background:rgba(124,58,237,.1);color:#7c3aed;">
+                    <i class="bi bi-folder2-open"></i>
+                </div>
+                <div class="feature-title" data-ar="مواد تعليمية متكاملة" data-en="Complete Learning Materials">مواد تعليمية متكاملة</div>
+                <div class="feature-desc" data-ar="فيديوهات، PDF، مستندات، وروابط تعليمية — المدرس يرفع كل شيء وأنت تجده في مكان واحد منظم." data-en="Videos, PDFs, documents, and links — teachers upload everything and you find it all in one organized place.">
+                    فيديوهات، PDF، مستندات، وروابط تعليمية — المدرس يرفع كل شيء وأنت تجده في مكان واحد منظم.
+                </div>
+            </div>
+            
+            <div class="feature-card f3">
+                <div class="feature-icon-wrapper" style="background:rgba(34,197,94,.1);color:var(--success);">
+                    <i class="bi bi-shield-lock-fill"></i>
+                </div>
+                <div class="feature-title" data-ar="منصة موثوقة ومؤمنة" data-en="Trusted & Secure Platform">منصة موثوقة ومؤمنة</div>
+                <div class="feature-desc" data-ar="مدرسون معتمدون، محتوى عالي الجودة، ونظام اشتراكات مرن يضمن لك أفضل تجربة تعليمية." data-en="Certified teachers, high-quality content, and a flexible subscription system to ensure the best learning experience.">
+                    مدرسون معتمدون، محتوى عالي الجودة، ونظام اشتراكات مرن يضمن لك أفضل تجربة تعليمية.
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+{% if courses %}
+<section class="courses-section">
+    <div class="container">
+        <div class="section-header-flex">
+            <div>
+                <h2 class="section-title" data-ar="أحدث الكورسات" data-en="Latest Courses">أحدث الكورسات</h2>
+                <p class="section-subtitle" data-ar="اختر من بين مئات الكورسات" data-en="Choose from hundreds of courses">اختر من بين مئات الكورسات</p>
+            </div>
+            <a href="{% url 'course_list' %}" class="btn btn-ghost btn-sm">
+                <span data-ar="عرض الكل" data-en="View All">عرض الكل</span>
+                <i class="bi bi-arrow-left"></i>
+            </a>
+        </div>
+        
+        <div class="grid grid-3">
+            {% for course in courses %}
+            <div class="course-card-pro">
+                <div class="course-thumb-container">
+                    {% if course.thumbnail %}
+                        <img src="{{ course.thumbnail.url }}" class="course-thumb" alt="{{ course.title }}">
+                    {% else %}
+                        <div class="course-thumb-placeholder" style="background:linear-gradient(135deg,{% cycle '#0ea5e9' '#7c3aed' '#f97316' '#22c55e' '#0ea5e9' %},{% cycle '#7c3aed' '#f97316' '#22c55e' '#0ea5e9' '#7c3aed' %});">
+                            <i class="bi bi-book-fill" style="color:rgba(255,255,255,.5);"></i>
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <div class="course-card-body">
+                    <div class="course-meta">
+                        <div class="teacher-mini">
+                            {% if course.teacher.profile_picture %}
+                                <img src="{{ course.teacher.profile_picture.url }}" 
+                                    class="teacher-avatar-sm" 
+                                    style="object-fit: cover;">
+                            {% else %}
+                                <div class="teacher-avatar-sm">
+                                    {{ course.teacher.first_name|first|upper }}
+                                </div>
+                            {% endif %}
+                            <span class="teacher-name">{{ course.teacher.get_full_name }}</span>
+                        </div>
+                        {% if course.is_free %}
+                        <span class="badge badge-green" data-ar="مجاني" data-en="Free">مجاني</span>
+                        {% endif %}
+                    </div>
+                    
+                    <h3 class="course-title-pro">{{ course.title }}</h3>
+                    <p class="course-desc-pro">{{ course.description|truncatewords:18 }}</p>
+                    
+                    <div class="course-footer">
+                        <div>
+                            {% if course.is_free %}
+                            <span class="course-price-pro" data-ar="مجاني" data-en="Free">مجاني</span>
+                            {% else %}
+                            <span class="course-price-pro">{{ course.price|floatformat:0 }} <span class="course-currency" data-ar="جنيه" data-en="EGP">جنيه</span></span>
+                            {% endif %}
+                        </div>
+                        <a href="{% url 'course_detail' course.pk %}" class="btn btn-primary btn-sm">
+                            <span data-ar="عرض" data-en="View">عرض</span>
+                            <i class="bi bi-arrow-left"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+
+{% if not user.is_authenticated %}
+<section class="cta-section">
+    <div class="cta-inner">
+        <div class="hero-eyebrow">
+            <span data-ar="ابدأ الآن" data-en="Start Now">ابدأ الآن</span>
+        </div>
+        <h2 class="cta-title" data-ar="ابدأ رحلتك التعليمية اليوم" data-en="Start Your Learning Journey Today">ابدأ رحلتك التعليمية اليوم</h2>
+        <p class="cta-desc" data-ar="انضم لآلاف الطلاب الذين يتعلمون على منصة A-To-Z، سجّل مجاناً وابدأ في الاشتراك بالكورسات." data-en="Join thousands of students learning on A-To-Z. Register for free and start subscribing to courses.">
+            انضم لآلاف الطلاب الذين يتعلمون على منصة A-To-Z، سجّل مجاناً وابدأ في الاشتراك بالكورسات.
+        </p>
+        <div class="cta-actions">
+            <a href="{% url 'register' %}" class="btn btn-primary btn-xl">
+                <span data-ar="إنشاء حساب مجاني" data-en="Create Free Account">إنشاء حساب مجاني</span>
+            </a>
+            <a href="{% url 'course_list' %}" class="btn btn-ghost btn-xl">
+                <span data-ar="تصفح الكورسات" data-en="Browse Courses">تصفح الكورسات</span>
+            </a>
+        </div>
+    </div>
+</section>
+{% endif %}
+
+{% endblock %}

@@ -1,0 +1,154 @@
+{% extends 'System/base.html' %}
+{% block title %}تعديل الامتحان — A-To-Z{% endblock %}
+{% block extra_css %}
+<style>
+.question-card {
+    background: var(--bg-muted);
+    border: 1px solid var(--border);
+    border-radius: var(--r-md);
+    padding: 20px;
+    margin-bottom: 14px;
+    position: relative;
+    transition: all var(--t);
+}
+.question-card:hover { border-color: rgba(14,165,233,.25); }
+.q-badge {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 30px; height: 30px; border-radius: 50%;
+    background: rgba(14,165,233,.1); color: var(--brand);
+    font-weight: 800; font-size: .85rem; flex-shrink: 0;
+}
+.correct-badge {
+    display: inline-flex; align-items: center; gap: 5px;
+    background: rgba(34,197,94,.1); color: #16a34a;
+    border: 1px solid rgba(34,197,94,.2);
+    border-radius: 99px; padding: 3px 10px;
+    font-size: .78rem; font-weight: 700;
+}
+</style>
+{% endblock %}
+{% block content %}
+<div class="container py-8">
+    <div style="display:grid;grid-template-columns:1fr 340px;gap:28px;align-items:start;">
+
+        <!-- الأسئلة -->
+        <div>
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:12px;">
+                <div>
+                    <a href="{% url 'course_detail' exam.course.pk %}" style="display:inline-flex;align-items:center;gap:6px;color:var(--text-muted);font-size:.875rem;font-weight:600;margin-bottom:8px;">
+                        <i class="bi bi-arrow-right"></i> العودة للكورس
+                    </a>
+                    <h1 style="font-family:'Syne','Cairo',sans-serif;font-weight:800;font-size:1.5rem;color:var(--text-primary);">
+                        <i class="bi bi-file-earmark-text" style="color:var(--brand);margin-inline-end:8px;"></i>
+                        {{ exam.title }}
+                    </h1>
+                    <p style="color:var(--text-secondary);margin-top:4px;font-size:.875rem;">
+                        {{ exam.questions.count }} سؤال •
+                        إجمالي الدرجات: <strong>{{ exam.get_total_marks }}</strong> •
+                        درجة النجاح: <strong>{{ exam.pass_score }}%</strong>
+                    </p>
+                </div>
+                <a href="{% url 'question_add' exam.pk %}" class="btn btn-primary">
+                    <i class="bi bi-plus-circle-fill"></i> إضافة سؤال
+                </a>
+            </div>
+
+            {% for q in questions %}
+            <div class="question-card">
+                <div style="display:flex;align-items:flex-start;gap:14px;">
+                    <div class="q-badge">{{ forloop.counter }}</div>
+                    <div style="flex:1;min-width:0;">
+                        <div style="font-weight:700;font-size:.95rem;color:var(--text-primary);margin-bottom:10px;">{{ q.text }}</div>
+
+                        {% if q.question_type == 'mcq' %}
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:10px;">
+                            {% if q.option_a %}<div style="padding:6px 10px;background:var(--bg-surface);border:1px solid var(--border);border-radius:var(--r-sm);font-size:.82rem;"><strong>أ.</strong> {{ q.option_a }}</div>{% endif %}
+                            {% if q.option_b %}<div style="padding:6px 10px;background:var(--bg-surface);border:1px solid var(--border);border-radius:var(--r-sm);font-size:.82rem;"><strong>ب.</strong> {{ q.option_b }}</div>{% endif %}
+                            {% if q.option_c %}<div style="padding:6px 10px;background:var(--bg-surface);border:1px solid var(--border);border-radius:var(--r-sm);font-size:.82rem;"><strong>ج.</strong> {{ q.option_c }}</div>{% endif %}
+                            {% if q.option_d %}<div style="padding:6px 10px;background:var(--bg-surface);border:1px solid var(--border);border-radius:var(--r-sm);font-size:.82rem;"><strong>د.</strong> {{ q.option_d }}</div>{% endif %}
+                        </div>
+                        {% else %}
+                        <div style="font-size:.82rem;color:var(--text-muted);margin-bottom:8px;">صح أو خطأ</div>
+                        {% endif %}
+
+                        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+                            <span class="correct-badge">
+                                <i class="bi bi-check-circle-fill"></i>
+                                الإجابة: {{ q.correct_answer }}
+                            </span>
+                            <span style="font-size:.78rem;color:var(--text-muted);background:var(--bg-subtle);border:1px solid var(--border);border-radius:99px;padding:3px 10px;">
+                                {{ q.marks }} درجة
+                            </span>
+                        </div>
+                    </div>
+                    <a href="{% url 'question_delete' q.pk %}" onclick="return confirm('حذف هذا السؤال؟')"
+                       style="width:32px;height:32px;border-radius:var(--r-sm);background:rgba(239,68,68,.08);color:var(--danger);display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all var(--t);"
+                       onmouseover="this.style.background='rgba(239,68,68,.15)'" onmouseout="this.style.background='rgba(239,68,68,.08)'">
+                        <i class="bi bi-trash"></i>
+                    </a>
+                </div>
+            </div>
+            {% empty %}
+            <div style="background:rgba(14,165,233,.02);border:2px dashed var(--border-strong);border-radius:var(--r-xl);padding:60px 24px;text-align:center;">
+                <div style="font-size:2.5rem;margin-bottom:16px;">📝</div>
+                <h3 style="font-family:'Syne','Cairo',sans-serif;font-weight:800;color:var(--text-primary);margin-bottom:8px;">لا توجد أسئلة بعد</h3>
+                <p style="color:var(--text-secondary);margin-bottom:20px;">ابدأ بإضافة أسئلة للامتحان</p>
+                <a href="{% url 'question_add' exam.pk %}" class="btn btn-primary">
+                    <i class="bi bi-plus-lg"></i> أضف أول سؤال
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- الإعدادات -->
+        <div>
+            <div style="background:var(--bg-surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:24px;position:sticky;top:calc(var(--nav-h) + 16px);">
+                <h3 style="font-family:'Syne','Cairo',sans-serif;font-weight:700;font-size:1rem;margin-bottom:20px;color:var(--text-primary);">
+                    <i class="bi bi-gear" style="color:var(--brand);margin-inline-end:8px;"></i>
+                    إعدادات الامتحان
+                </h3>
+                <form method="post">
+                    {% csrf_token %}
+                    {% for field in form %}
+                    <div class="mb-3">
+                        <label style="display:block;font-weight:700;font-size:.8rem;color:var(--text-secondary);margin-bottom:6px;">{{ field.label }}</label>
+                        {{ field }}
+                        {% if field.errors %}<div style="color:var(--danger);font-size:.75rem;margin-top:3px;">{{ field.errors|join:", " }}</div>{% endif %}
+                    </div>
+                    {% endfor %}
+                    <button type="submit" class="btn btn-primary w-full mt-3">
+                        <i class="bi bi-check-lg"></i> حفظ الإعدادات
+                    </button>
+                </form>
+
+                <div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border);">
+                    {% if exam.is_published %}
+                    <div style="display:flex;align-items:center;gap:8px;padding:12px;background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.2);border-radius:var(--r-md);color:#16a34a;font-size:.85rem;font-weight:600;">
+                        <i class="bi bi-check-circle-fill"></i> الامتحان منشور
+                    </div>
+                    {% else %}
+                    <div style="display:flex;align-items:center;gap:8px;padding:12px;background:rgba(234,179,8,.08);border:1px solid rgba(234,179,8,.2);border-radius:var(--r-md);color:#ca8a04;font-size:.85rem;font-weight:600;">
+                        <i class="bi bi-eye-slash"></i> الامتحان مخفي
+                    </div>
+                    {% endif %}
+
+                    <div style="margin-top:12px;font-size:.8rem;color:var(--text-muted);">
+                        <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);">
+                            <span>عدد الأسئلة</span>
+                            <strong>{{ exam.questions.count }}</strong>
+                        </div>
+                        <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);">
+                            <span>إجمالي الدرجات</span>
+                            <strong>{{ exam.get_total_marks }}</strong>
+                        </div>
+                        <div style="display:flex;justify-content:space-between;padding:6px 0;">
+                            <span>المحاولات</span>
+                            <strong>{{ exam.attempts.count }}</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

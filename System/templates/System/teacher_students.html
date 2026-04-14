@@ -1,0 +1,226 @@
+{% extends 'System/base.html' %}
+{% block title %}طلابي — A-To-Z{% endblock %}
+{% block extra_css %}
+<style>
+.page-header {
+    background: linear-gradient(180deg, var(--bg-surface) 0%, var(--bg-base) 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 48px 0 36px;
+    margin-bottom: 40px;
+}
+.student-card {
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: var(--r-lg);
+    padding: 20px 24px;
+    transition: all var(--t);
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    margin-bottom: 12px;
+}
+.student-card:hover {
+    border-color: rgba(14,165,233,.2);
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+}
+.avatar {
+    width: 50px; height: 50px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, var(--brand), #7c3aed);
+    color: #fff; font-weight: 800; font-size: 1.1rem;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+}
+.progress-mini {
+    height: 6px; border-radius: 99px;
+    background: var(--bg-muted);
+    overflow: hidden; margin-top: 6px;
+}
+.progress-mini-fill {
+    height: 100%; border-radius: 99px;
+    background: linear-gradient(90deg, var(--brand), #38bdf8);
+    transition: width .5s ease;
+}
+.filter-bar {
+    display: flex; align-items: center; gap: 12px;
+    flex-wrap: wrap; margin-bottom: 28px; justify-content: space-between;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="container">
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;">
+            <div>
+                <div style="display:inline-flex;align-items:center;gap:8px;padding:6px 14px;background:var(--bg-subtle);border:1px solid var(--border);border-radius:99px;font-size:.85rem;font-weight:600;color:var(--text-secondary);margin-bottom:14px;">
+                    <i class="bi bi-people-fill" style="color:var(--brand);"></i>
+                    <span data-ar="طلابي" data-en="My Students">طلابي</span>
+                </div>
+                <h1 style="font-family:'Syne','Cairo',sans-serif;font-weight:800;font-size:2rem;color:var(--text-primary);">
+                    <span data-ar="قائمة الطلاب المشتركين" data-en="Enrolled Students List">قائمة الطلاب المشتركين</span>
+                </h1>
+                <p style="color:var(--text-secondary);margin-top:6px;">
+                    <span data-ar="{{ students_data|length }} طالب مشترك في كورساتك" data-en="{{ students_data|length }} student(s) enrolled in your courses">{{ students_data|length }} طالب مشترك في كورساتك</span>
+                </p>
+            </div>
+            <a href="{% url 'dashboard' %}" class="btn btn-ghost">
+                <i class="bi bi-arrow-right"></i> <span data-ar="الداشبورد" data-en="Dashboard">الداشبورد</span>
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="container pb-12">
+
+    <div class="filter-bar">
+        <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+            <span style="font-weight:700;font-size:.875rem;color:var(--text-secondary);" data-ar="فلتر حسب الكورس:" data-en="Filter by Course:">فلتر حسب الكورس:</span>
+            <a href="{% url 'teacher_students' %}"
+               class="btn {% if not course_filter %}btn-primary{% else %}btn-ghost{% endif %} btn-sm" style="border-radius:99px;">
+                <span data-ar="الكل" data-en="All">الكل</span>
+            </a>
+            {% for course in teacher_courses %}
+            <a href="{% url 'teacher_students' %}?course={{ course.pk }}"
+               class="btn {% if course_filter == course.pk|stringformat:'s' %}btn-primary{% else %}btn-ghost{% endif %} btn-sm" style="border-radius:99px;">
+                {{ course.title }}
+            </a>
+            {% endfor %}
+        </div>
+        
+        <div style="flex:1; min-width: 250px; max-width: 400px;">
+            <div style="position:relative;">
+                <i class="bi bi-search" style="position:absolute; right:14px; top:50%; transform:translateY(-50%); color:var(--text-muted);"></i>
+                <input type="text" id="searchInput" class="form-control" 
+                       placeholder="ابحث بالاسم، الإيميل، أو الموبايل..." 
+                       data-ar-placeholder="ابحث بالاسم، الإيميل، أو الموبايل..." 
+                       data-en-placeholder="Search by name, email, or mobile..." 
+                       style="padding-right:40px; border-radius:99px;">
+            </div>
+        </div>
+    </div>
+
+    {% if students_data %}
+    <div id="studentsList">
+        {% for item in students_data %}
+        <div class="student-card">
+            
+            {% if item.enrollment.student.profile_picture %}
+                <img src="{{ item.enrollment.student.profile_picture.url }}" class="avatar" style="object-fit: cover;">
+            {% else %}
+                <div class="avatar">{{ item.enrollment.student.first_name|first|upper }}</div>
+            {% endif %}
+
+            <div style="flex:1;min-width:0;">
+                <div class="student-name" style="font-weight:700;font-size:1rem;color:var(--text-primary);">
+                    {{ item.enrollment.student.get_full_name|default:item.enrollment.student.username }}
+                </div>
+                <div style="font-size:.82rem;color:var(--text-secondary);margin-top:2px;margin-bottom:6px;">
+                    <i class="bi bi-book" style="margin-inline-end:4px;"></i>
+                    {{ item.enrollment.course.title }}
+                </div>
+
+                {% if item.total_materials > 0 %}
+                <div style="font-size:.75rem;color:var(--text-muted);margin-bottom:4px;">
+                    <span data-ar="فتح {{ item.viewed_count }} من {{ item.total_materials }} مواد" data-en="Opened {{ item.viewed_count }} out of {{ item.total_materials }} materials">فتح {{ item.viewed_count }} من {{ item.total_materials }} مواد</span>
+                </div>
+                <div class="progress-mini">
+                    <div class="progress-mini-fill"
+                         style="width:{% if item.total_materials > 0 %}{% widthratio item.viewed_count item.total_materials 100 %}{% else %}0{% endif %}%">
+                    </div>
+                </div>
+                {% else %}
+                <div style="font-size:.75rem;color:var(--text-muted);">
+                    <span data-ar="لا توجد مواد في الكورس" data-en="No materials in this course">لا توجد مواد في الكورس</span>
+                </div>
+                {% endif %}
+                
+                <div style="font-size:.82rem;color:var(--text-secondary);margin-top:8px;">
+                    <i class="bi bi-file-earmark-text" style="margin-inline-end:4px;"></i>
+                    <span data-ar="متوسط درجات الامتحانات:" data-en="Average Exam Score:">متوسط درجات الامتحانات:</span> 
+                    {% if item.exam_attempts_count > 0 %}
+                        <span style="font-weight:700; color:var(--brand);">{{ item.average_score }}%</span>
+                        <span style="font-size:.7rem; color:var(--text-muted);" data-ar="(من {{ item.exam_attempts_count }} امتحان)" data-en="(from {{ item.exam_attempts_count }} exams)">(من {{ item.exam_attempts_count }} امتحان)</span>
+                    {% else %}
+                        <span style="font-size:.75rem; color:var(--text-muted);" data-ar="لم يمتحن بعد" data-en="Not tested yet">لم يمتحن بعد</span>
+                    {% endif %}
+                </div>
+
+            </div>
+
+            <div style="text-align:center;flex-shrink:0;">
+                <div style="font-family:'Outfit',sans-serif;font-size:1.4rem;font-weight:800;color:var(--brand);">
+                    {% if item.total_materials > 0 %}
+                    {% widthratio item.viewed_count item.total_materials 100 %}%
+                    {% else %}—{% endif %}
+                </div>
+                <div style="font-size:.72rem;color:var(--text-muted);font-weight:600;" data-ar="التقدم" data-en="Progress">التقدم</div>
+            </div>
+
+            <div style="display:flex;flex-direction:column;gap:6px;flex-shrink:0;">
+                <div style="font-size:.75rem;color:var(--text-muted);text-align:center;">
+                    <i class="bi bi-calendar3" style="margin-inline-end:4px;"></i>
+                    {{ item.enrollment.enrolled_at|date:"d/m/Y" }}
+                </div>
+                {% if item.enrollment.student.phone %}
+                <div class="student-phone" style="font-size:.75rem;color:var(--text-muted);text-align:center;direction:ltr;">
+                    <i class="bi bi-telephone" style="margin-inline-end:4px;"></i>
+                    {{ item.enrollment.student.phone }}
+                </div>
+                {% endif %}
+                {% if item.enrollment.student.email %}
+                <div class="student-email" style="font-size:.72rem;color:var(--text-muted);text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:140px;">
+                    <i class="bi bi-envelope" style="margin-inline-end:4px;"></i>
+                    {{ item.enrollment.student.email }}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    {% else %}
+    <div style="background:rgba(14,165,233,.02);border:2px dashed var(--border-strong);border-radius:var(--r-xl);padding:80px 24px;text-align:center;">
+        <div style="font-size:3rem;margin-bottom:16px;"></div>
+        <h3 style="font-family:'Syne','Cairo',sans-serif;font-weight:800;font-size:1.3rem;color:var(--text-primary);margin-bottom:8px;">
+            <span data-ar="لا يوجد طلاب مشتركون بعد" data-en="No students enrolled yet">لا يوجد طلاب مشتركون بعد</span>
+        </h3>
+        <p style="color:var(--text-secondary);max-width:320px;margin:0 auto 24px;">
+            {% if course_filter %}
+            <span data-ar="لا يوجد طلاب مشتركون في هذا الكورس حتى الآن." data-en="No students enrolled in this course yet.">لا يوجد طلاب مشتركون في هذا الكورس حتى الآن.</span>
+            {% else %}
+            <span data-ar="لم يشترك أي طالب في كورساتك بعد." data-en="No students have enrolled in your courses yet.">لم يشترك أي طالب في كورساتك بعد.</span>
+            {% endif %}
+        </p>
+        <a href="{% url 'dashboard' %}" class="btn btn-primary btn-lg" style="border-radius:12px;">
+            <i class="bi bi-speedometer2"></i> <span data-ar="العودة للداشبورد" data-en="Back to Dashboard">العودة للداشبورد</span>
+        </a>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('searchInput');
+    const studentCards = document.querySelectorAll('.student-card');
+
+    if(searchInput) {
+        searchInput.addEventListener('input', function(e) {
+            const searchTerm = e.target.value.toLowerCase();
+
+            studentCards.forEach(card => {
+                // تجميع كل النصوص داخل الكارت (الاسم، الايميل، الهاتف، الكورس)
+                const cardText = card.innerText.toLowerCase();
+                
+                if(cardText.includes(searchTerm)) {
+                    card.style.display = 'flex';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        });
+    }
+});
+</script>
+{% endblock %}

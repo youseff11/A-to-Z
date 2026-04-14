@@ -1,0 +1,61 @@
+{% extends 'System/base.html' %}
+{% block title %}Sign In — A-To-Z{% endblock %}
+{% block extra_css %}
+<style>
+.auth-page { min-height: calc(100vh - var(--nav-h)); display: flex; align-items: center; padding: 48px 0; }
+.auth-card { background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--r-xl); padding: 40px; box-shadow: var(--shadow-lg); width: 100%; max-width: 440px; margin: 0 auto; }
+.auth-logo { width: 52px; height: 52px; background: linear-gradient(135deg, var(--brand), #7c3aed); border-radius: 14px; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 1.4rem; margin: 0 auto 20px; box-shadow: 0 6px 20px rgba(14,165,233,.3); }
+.auth-title { font-family: 'Syne','Cairo',sans-serif; font-weight: 800; font-size: 1.6rem; letter-spacing: -.03em; text-align: center; color: var(--text-primary); }
+.auth-sub { color: var(--text-muted); text-align: center; font-size: .875rem; margin-top: 6px; margin-bottom: 32px; }
+.field-group { margin-bottom: 18px; }
+.field-label { font-size: .82rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 7px; display: block; }
+.field-wrap { position: relative; }
+.field-wrap .field-icon { position: absolute; top: 50%; transform: translateY(-50%); inset-inline-start: 14px; color: var(--text-muted); font-size: 1rem; pointer-events: none; }
+.field-wrap input { padding-inline-start: 42px; }
+</style>
+{% endblock %}
+{% block content %}
+<div class="auth-page">
+    <div class="container-xs">
+        <div class="auth-card">
+            <div class="auth-logo"><i class="bi bi-mortarboard-fill"></i></div>
+            <h1 class="auth-title" data-ar="أهلاً بك" data-en="Welcome Back">أهلاً بك</h1>
+            <p class="auth-sub" data-ar="سجّل دخولك لمتابعة التعلم" data-en="Sign in to continue learning">سجّل دخولك لمتابعة التعلم</p>
+
+            <form method="post">
+                {% csrf_token %}
+                <div class="field-group">
+                    <label class="field-label" data-ar="اسم المستخدم" data-en="Username">اسم المستخدم</label>
+                    <div class="field-wrap">
+                        <i class="bi bi-person field-icon"></i>
+                        {{ form.username }}
+                    </div>
+                </div>
+                <div class="field-group">
+                    <label class="field-label" data-ar="كلمة المرور" data-en="Password">كلمة المرور</label>
+                    <div class="field-wrap">
+                        <i class="bi bi-lock field-icon"></i>
+                        {{ form.password }}
+                    </div>
+                </div>
+                {% if form.errors %}
+                <div class="alert alert-danger">
+                    <i class="bi bi-exclamation-circle-fill"></i>
+                    <span data-ar="اسم المستخدم أو كلمة المرور غير صحيحة" data-en="Invalid username or password">اسم المستخدم أو كلمة المرور غير صحيحة</span>
+                </div>
+                {% endif %}
+                <button type="submit" class="btn btn-primary w-full btn-lg" style="margin-top:8px;">
+                    <span data-ar="تسجيل الدخول" data-en="Sign In">تسجيل الدخول</span>
+                    <i class="bi bi-arrow-left"></i>
+                </button>
+            </form>
+
+            <div class="divider"></div>
+            <p style="text-align:center;font-size:.875rem;color:var(--text-muted);">
+                <span data-ar="ليس لديك حساب؟" data-en="Don't have an account?">ليس لديك حساب؟</span>
+                <a href="{% url 'register' %}" style="color:var(--brand);font-weight:700;" data-ar="سجّل الآن" data-en="Sign Up">سجّل الآن</a>
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,289 @@
+{% extends 'System/base.html' %}
+{% block title %}{{ course.title }} — A-To-Z{% endblock %}
+{% block extra_css %}
+<style>
+.material-row { display:flex;align-items:center;gap:12px;padding:12px 16px;background:var(--bg-muted);border:1px solid var(--border);border-radius:var(--r-md);transition:all var(--t);margin-bottom:8px; }
+.material-row:hover { border-color:rgba(14,165,233,.2);background:rgba(14,165,233,.03); }
+.material-icon { width:38px;height:38px;border-radius:var(--r-sm);display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0; }
+.meeting-tile { display:flex;align-items:center;gap:12px;padding:14px 18px;background:var(--bg-muted);border:1px solid var(--border);border-radius:var(--r-md);transition:all var(--t);margin-bottom:8px; }
+.meeting-tile:hover { border-color:rgba(14,165,233,.2); }
+.sidebar-card { background:var(--bg-surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:24px;position:sticky;top:calc(var(--nav-h) + 16px); }
+.info-row { display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);font-size:.875rem;color:var(--text-secondary); }
+.info-row:last-child { border-bottom:none; }
+.info-row i { width:20px;text-align:center;color:var(--brand); }
+
+/* إضافة التجاوب (Responsive Styles) */
+.course-layout {
+    display: grid;
+    grid-template-columns: 1fr 340px;
+    gap: 28px;
+    align-items: start;
+}
+
+@media (max-width: 992px) {
+    .course-layout {
+        grid-template-columns: 1fr;
+    }
+    .sidebar-card {
+        position: static;
+        margin-top: 10px;
+    }
+}
+
+@media (max-width: 576px) {
+    .card-body > div[style*="justify-content:space-between"] {
+        flex-direction: column;
+        align-items: flex-start !important;
+        gap: 15px;
+    }
+    .material-row, .meeting-tile {
+        flex-wrap: wrap;
+    }
+    .material-row .btn, .meeting-tile .btn, .material-row span[id^="view-badge"] {
+        width: 100%;
+        text-align: center;
+        display: flex;
+        justify-content: center;
+        margin-top: 5px;
+    }
+    .material-row > div:nth-child(2), .meeting-tile > div:nth-child(2) {
+        flex: 1 1 70%;
+    }
+}
+</style>
+{% endblock %}
+{% block content %}
+<div class="container py-8">
+    <div class="course-layout">
+
+        <div>
+            <div class="card mb-6" style="overflow:hidden;">
+                {% if course.thumbnail %}
+                    <img src="{{ course.thumbnail.url }}" style="width:100%;height:320px;object-fit:cover;display:block;">
+                {% else %}
+                    <div style="height:260px;background:linear-gradient(135deg,var(--brand),#7c3aed);display:flex;align-items:center;justify-content:center;font-size:4rem;color:rgba(255,255,255,.5);"><i class="bi bi-book-fill"></i></div>
+                {% endif %}
+                <div class="card-body">
+                    <h1 style="font-family:'Syne','Cairo',sans-serif;font-weight:800;font-size:1.65rem;letter-spacing:-.03em;margin-bottom:14px;color:var(--text-primary);">{{ course.title }}</h1>
+                    <a href="{% url 'teacher_profile' course.teacher.pk %}" style="display:inline-flex;align-items:center;gap:10px;margin-bottom:16px;padding:8px 14px;background:var(--bg-muted);border-radius:var(--r-md);border:1px solid var(--border);transition:all var(--t);" onmouseover="this.style.borderColor='rgba(14,165,233,.3)'" onmouseout="this.style.borderColor='var(--border)'">      
+                        <div style="width:34px;height:34px;border-radius:9px;background:linear-gradient(135deg,var(--brand),#7c3aed);color:#fff;font-weight:700;display:flex;align-items:center;justify-content:center;overflow:hidden;">
+                            {% if course.teacher.profile_picture %}
+                                <img src="{{ course.teacher.profile_picture.url }}" style="width:100%;height:100%;object-fit:cover;">
+                            {% else %}
+                                {{ course.teacher.first_name|first|upper }}
+                            {% endif %}
+                        </div>
+                        <div>
+                            <div style="font-weight:700;font-size:.875rem;color:var(--text-primary);">{{ course.teacher.get_full_name }}</div>
+                            <div style="font-size:.72rem;color:var(--text-muted);" data-ar="المدرس" data-en="Instructor">المدرس</div>
+                        </div>
+                        <span class="badge badge-purple" style="margin-inline-start:4px;" data-ar="مدرس" data-en="Teacher">مدرس</span>
+                    </a>
+                    <p style="color:var(--text-secondary);line-height:1.75;font-size:.95rem;">{{ course.description }}</p>
+                </div>
+            </div>
+
+            {% if is_enrolled or request.user == course.teacher %}
+            <div class="card mb-6">
+                <div class="card-body">
+                    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+                        <h3 style="font-family:'Syne','Cairo',sans-serif;font-weight:700;font-size:1.05rem;color:var(--text-primary);">
+                            <i class="bi bi-folder2-open" style="color:var(--accent);margin-inline-end:8px;"></i>
+                            <span data-ar="المواد التعليمية" data-en="Learning Materials">المواد التعليمية</span>
+                        </h3>
+                        {% if request.user == course.teacher %}
+                        <a href="{% url 'material_add' course.pk %}" class="btn btn-primary btn-sm"><i class="bi bi-plus"></i><span data-ar="إضافة" data-en="Add">إضافة</span></a>
+                        {% endif %}
+                    </div>
+                    {% for mat in materials %}
+                    <div class="material-row">
+                        {% if mat.material_type == 'video' %}
+                        <div class="material-icon" style="background:rgba(239,68,68,.1);color:var(--danger);"><i class="bi bi-play-circle-fill"></i></div>
+                        {% elif mat.material_type == 'pdf' %}
+                        <div class="material-icon" style="background:rgba(239,68,68,.1);color:var(--danger);"><i class="bi bi-file-pdf-fill"></i></div>
+                        {% elif mat.material_type == 'link' %}
+                        <div class="material-icon" style="background:rgba(14,165,233,.1);color:var(--brand);"><i class="bi bi-link-45deg"></i></div>
+                        {% else %}
+                        <div class="material-icon" style="background:rgba(124,58,237,.1);color:#7c3aed;"><i class="bi bi-file-earmark-fill"></i></div>
+                        {% endif %}
+                        <div style="flex:1;min-width:0;">
+                            <div style="font-weight:600;font-size:.9rem;color:var(--text-primary);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ mat.title }}</div>
+                            <div style="font-size:.75rem;color:var(--text-muted);">{{ mat.get_material_type_display }}</div>
+                        </div>
+                        {% if mat.file %}
+                        <a href="{{ mat.file.url }}" class="btn btn-ghost btn-sm" target="_blank"
+                           onclick="trackView({{ mat.pk }})" data-ar="تحميل" data-en="Download">تحميل</a>
+                        {% elif mat.url %}
+                        <a href="{{ mat.url }}" class="btn btn-ghost btn-sm" target="_blank"
+                           onclick="trackView({{ mat.pk }})" data-ar="فتح" data-en="Open">فتح</a>{% endif %}
+                        {% if is_enrolled %}
+                        <span id="view-badge-{{ mat.pk }}"
+                              style="font-size:.7rem;color:{% if mat.pk in viewed_material_ids %}#16a34a{% else %}var(--text-muted){% endif %};">
+                            {% if mat.pk in viewed_material_ids %}<i class="bi bi-check-circle-fill"></i>{% endif %}
+                        </span>
+                        {% endif %}
+                        {% if request.user == course.teacher %}
+                        <a href="{% url 'material_delete' mat.pk %}" class="btn btn-danger btn-sm" onclick="return confirm('{% if LANG == 'ar' %}حذف هذه المادة؟{% else %}Delete this material?{% endif %}')"><i class="bi bi-trash"></i></a>
+                        {% endif %}
+                    </div>
+                    {% empty %}
+                    <div class="empty-state" style="padding:40px 0;"><div class="empty-icon"><i class="bi bi-folder"></i></div><p style="font-weight:600;font-size:.875rem;" data-ar="لا توجد مواد بعد" data-en="No materials yet">لا توجد مواد بعد</p></div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            {% if meetings %}
+            <div class="card">
+                <div class="card-body">
+                    <h3 style="font-family:'Syne','Cairo',sans-serif;font-weight:700;font-size:1.05rem;margin-bottom:20px;color:var(--text-primary);">
+                        <i class="bi bi-camera-video-fill" style="color:var(--brand);margin-inline-end:8px;"></i>
+                        <span data-ar="الاجتماعات" data-en="Meetings">الاجتماعات</span>
+                    </h3>
+                    {% for meeting in meetings %}
+                    <div class="meeting-tile">
+                        <div style="width:44px;height:44px;border-radius:var(--r-sm);background:rgba(14,165,233,.1);color:var(--brand);display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i class="bi bi-camera-video-fill"></i></div>
+                        <div style="flex:1;">
+                            <div style="font-weight:700;font-size:.9rem;color:var(--text-primary);">{{ meeting.title }}</div>
+                            <div style="font-size:.75rem;color:var(--text-muted);">{{ meeting.scheduled_at|date:"d/m/Y" }} • {{ meeting.scheduled_at|time:"h:i A" }} • {{ meeting.duration_minutes }}<span data-ar=" دقيقة" data-en=" min"> دقيقة</span></div>
+                        </div>
+                        {% if meeting.status == 'live' %}<span class="badge badge-red"><span class="live-dot" style="width:6px;height:6px;margin-inline-end:4px;"></span><span data-ar="مباشر" data-en="Live">مباشر</span></span>{% endif %}
+                        {% if is_enrolled or request.user == course.teacher %}
+                        <a href="{% url 'meeting_room' meeting.pk %}" class="btn {% if meeting.status == 'live' %}btn-danger{% else %}btn-primary{% endif %} btn-sm">
+                            <span data-ar="انضم" data-en="Join">انضم</span>
+                        </a>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            {% if exams %}
+            <div class="card mt-6">
+                <div class="card-body">
+                    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+                        <h3 style="font-family:'Syne','Cairo',sans-serif;font-weight:700;font-size:1.05rem;color:var(--text-primary);">
+                            <i class="bi bi-file-earmark-text" style="color:var(--accent);margin-inline-end:8px;"></i>
+                            الامتحانات
+                        </h3>
+                        {% if request.user == course.teacher %}
+                        <a href="{% url 'exam_create' course.pk %}" class="btn btn-secondary btn-sm">
+                            <i class="bi bi-plus"></i> امتحان جديد
+                        </a>
+                        {% endif %}
+                    </div>
+                    {% for exam in exams %}
+                    <div class="meeting-tile">
+                        <div style="width:44px;height:44px;border-radius:var(--r-sm);background:rgba(249,115,22,.1);color:var(--accent);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:1.2rem;"><i class="bi bi-pencil-square"></i></div>
+                        <div style="flex:1;">
+                            <div style="font-weight:700;font-size:.9rem;color:var(--text-primary);">{{ exam.title }}</div>
+                            <div style="font-size:.75rem;color:var(--text-muted);">
+                                {{ exam.questions.count }} سؤال •
+                                {{ exam.duration_minutes }} دقيقة •
+                                النجاح: {{ exam.pass_score }}%
+                            </div>
+                        </div>
+                        {% if request.user == course.teacher %}
+                        <a href="{% url 'exam_edit' exam.pk %}" class="btn btn-secondary btn-sm">
+                            <i class="bi bi-pencil"></i> تعديل
+                        </a>
+                        {% elif is_enrolled %}
+                            {% if exam.pk in attempted_exam_ids %}
+                            <span class="badge badge-green" style="padding:6px 12px;">
+                                <i class="bi bi-check-circle-fill"></i> تم الأداء
+                            </span>
+                            {% else %}
+                            <a href="{% url 'exam_take' exam.pk %}" class="btn btn-primary btn-sm">
+                                <i class="bi bi-play-fill"></i> ابدأ الامتحان
+                            </a>
+                            {% endif %}
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% elif request.user == course.teacher %}
+            <div class="card mt-6">
+                <div class="card-body" style="padding:28px;text-align:center;">
+                    <div style="font-size:2rem;margin-bottom:10px;">📝</div>
+                    <p style="color:var(--text-secondary);font-size:.875rem;margin-bottom:14px;">لا توجد امتحانات في هذا الكورس</p>
+                    <a href="{% url 'exam_create' course.pk %}" class="btn btn-primary btn-sm">
+                        <i class="bi bi-plus-circle"></i> إنشاء امتحان
+                    </a>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <div>
+            <div class="sidebar-card">
+                <div style="margin-bottom:20px;padding-bottom:20px;border-bottom:1px solid var(--border);">
+                    <div style="font-family:'Syne',sans-serif;font-size:1.8rem;font-weight:800;letter-spacing:-.04em;color:var(--brand);margin-bottom:4px;">
+                        {% if course.is_free %}<span data-ar="مجاني" data-en="Free">مجاني</span>
+                        {% else %}
+                        {{ course.price|floatformat:0 }} <span style="font-size:.9rem;font-weight:400;color:var(--text-muted);" data-ar="جنيه" data-en="EGP">جنيه</span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                {% if request.user.is_authenticated %}
+                    {% if request.user == course.teacher %}
+                    <div style="display:flex;flex-direction:column;gap:8px;">
+                        <a href="{% url 'course_edit' course.pk %}" class="btn btn-ghost w-full"><i class="bi bi-pencil"></i><span data-ar="تعديل الكورس" data-en="Edit Course">تعديل الكورس</span></a>
+                        <a href="{% url 'material_add' course.pk %}" class="btn btn-secondary w-full"><i class="bi bi-plus-circle"></i><span data-ar="إضافة مادة" data-en="Add Material">إضافة مادة</span></a>
+                        <a href="{% url 'meeting_create' course.pk %}" class="btn btn-primary w-full"><i class="bi bi-camera-video"></i><span data-ar="إنشاء اجتماع" data-en="Create Meeting">إنشاء اجتماع</span></a>
+                        <a href="{% url 'exam_create' course.pk %}" class="btn btn-secondary w-full" style="background:rgba(249,115,22,.08);border-color:rgba(249,115,22,.2);color:var(--accent);"><i class="bi bi-file-earmark-text"></i> إنشاء امتحان</a>
+                        <a href="{% url 'teacher_students' %}?course={{ course.pk }}" class="btn btn-ghost w-full"><i class="bi bi-people"></i> الطلاب المشتركون</a>
+                    </div>
+                    {% elif is_enrolled %}
+                    <div style="background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.2);border-radius:var(--r-md);padding:14px;display:flex;align-items:center;gap:10px;color:#16a34a;font-weight:600;font-size:.875rem;">
+                        <i class="bi bi-check-circle-fill" style="font-size:1.2rem;"></i>
+                        <span data-ar="أنت مشترك بالفعل" data-en="Already enrolled">أنت مشترك بالفعل</span>
+                    </div>
+                    {% else %}
+                    <a href="{% url 'enroll' course.pk %}" class="btn btn-primary w-full btn-lg">
+                        <i class="bi bi-person-plus-fill"></i>
+                        <span data-ar="اشترك الآن" data-en="Enroll Now">اشترك الآن</span>
+                    </a>
+                    {% endif %}
+                {% else %}
+                <a href="{% url 'login' %}" class="btn btn-primary w-full btn-lg">
+                    <i class="bi bi-box-arrow-in-right"></i>
+                    <span data-ar="سجّل دخول للاشتراك" data-en="Sign In to Enroll">سجّل دخول للاشتراك</span>
+                </a>
+                {% endif %}
+
+                <div style="margin-top:20px;padding-top:20px;border-top:1px solid var(--border);">
+                    <div class="info-row"><i class="bi bi-folder2"></i><span>{{ course.materials.count }} <span data-ar="مادة تعليمية" data-en="materials">مادة تعليمية</span></span></div>
+                    <div class="info-row"><i class="bi bi-camera-video"></i><span>{{ course.meetings.count }} <span data-ar="اجتماع" data-en="meetings">اجتماع</span></span></div>
+                    <div class="info-row"><i class="bi bi-people"></i><span>{{ course.get_enrolled_count }} <span data-ar="طالب مشترك" data-en="enrolled students">طالب مشترك</span></span></div>
+                    <div class="info-row"><i class="bi bi-file-earmark-text" style="color:var(--accent);"></i><span>{{ course.exams.count }} امتحان</span></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function trackView(materialId) {
+    fetch('/materials/' + materialId + '/view/', {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': '{{ csrf_token }}',
+            'Content-Type': 'application/json'
+        }
+    }).then(r => r.json()).then(data => {
+        if (data.status === 'ok' && data.first_time) {
+            const badge = document.getElementById('view-badge-' + materialId);
+            if (badge) {
+                badge.innerHTML = '<i class="bi bi-check-circle-fill"></i>';
+                badge.style.color = '#16a34a';
+            }
+        }
+    }).catch(function(){});
+}
+</script>
+{% endblock %}

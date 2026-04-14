@@ -1,0 +1,217 @@
+{% extends 'System/base.html' %}
+{% block title %}{{ exam.title }} — A-To-Z{% endblock %}
+{% block extra_css %}
+<style>
+.exam-header {
+    background: linear-gradient(135deg, var(--brand), #7c3aed);
+    color: #fff;
+    padding: 40px 0;
+    margin-bottom: 32px;
+}
+.question-card {
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: var(--r-lg);
+    padding: 28px;
+    margin-bottom: 20px;
+    transition: all var(--t);
+}
+.question-card:hover { box-shadow: var(--shadow-md); }
+.q-number {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 36px; height: 36px; border-radius: 50%;
+    background: rgba(14,165,233,.1); color: var(--brand);
+    font-weight: 800; font-size: .9rem; flex-shrink: 0;
+}
+.option-label {
+    display: flex; align-items: center; gap: 12px;
+    padding: 14px 18px;
+    border: 2px solid var(--border);
+    border-radius: var(--r-md);
+    cursor: pointer;
+    transition: all .18s ease;
+    margin-bottom: 8px;
+    font-weight: 600;
+    font-size: .9rem;
+}
+.option-label:hover { border-color: var(--brand); background: rgba(14,165,233,.04); }
+.option-label input[type="radio"] { accent-color: var(--brand); width: 18px; height: 18px; }
+.option-label:has(input:checked) {
+    border-color: var(--brand);
+    background: rgba(14,165,233,.08);
+    color: var(--brand);
+}
+.timer-box {
+    position: sticky; top: calc(var(--nav-h) + 12px); z-index: 100;
+    background: var(--bg-surface); border: 1px solid var(--border);
+    border-radius: var(--r-lg); padding: 20px; text-align: center;
+    box-shadow: var(--shadow-md);
+}
+.timer-display {
+    font-family: 'Outfit', 'Syne', sans-serif;
+    font-size: 2.2rem; font-weight: 800;
+    color: var(--brand); letter-spacing: .05em;
+}
+.timer-display.warning { color: var(--warning); }
+.timer-display.danger { color: var(--danger); animation: pulse 1s infinite; }
+@keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: .6; } }
+</style>
+{% endblock %}
+{% block content %}
+<div class="exam-header">
+    <div class="container">
+        <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
+            <div style="width:56px;height:56px;border-radius:var(--r-md);background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:1.6rem;">📝</div>
+            <div>
+                <h1 style="font-family:'Syne','Cairo',sans-serif;font-weight:800;font-size:1.6rem;margin-bottom:4px;">{{ exam.title }}</h1>
+                <p style="opacity:.85;font-size:.9rem;">
+                    {{ questions.count }} سؤال •
+                    مدة الامتحان: {{ exam.duration_minutes }} دقيقة •
+                    درجة النجاح: {{ exam.pass_score }}%
+                </p>
+            </div>
+        </div>
+        {% if exam.description %}
+        <div style="margin-top:16px;padding:14px 18px;background:rgba(255,255,255,.12);border-radius:var(--r-md);font-size:.9rem;opacity:.9;">
+            {{ exam.description }}
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<div class="container pb-12">
+    <div style="display:grid;grid-template-columns:1fr 280px;gap:28px;align-items:start;">
+
+        <!-- الأسئلة -->
+        <form method="post" id="examForm">
+            {% csrf_token %}
+            {% for q in questions %}
+            <div class="question-card" id="q{{ forloop.counter }}">
+                <div style="display:flex;align-items:flex-start;gap:14px;margin-bottom:20px;">
+                    <div class="q-number">{{ forloop.counter }}</div>
+                    <div style="flex:1;">
+                        <div style="font-weight:700;font-size:1rem;color:var(--text-primary);line-height:1.6;">{{ q.text }}</div>
+                        <div style="font-size:.78rem;color:var(--text-muted);margin-top:4px;">{{ q.marks }} درجة</div>
+                    </div>
+                </div>
+
+                {% if q.question_type == 'mcq' %}
+                {% if q.option_a %}
+                <label class="option-label">
+                    <input type="radio" name="q_{{ q.pk }}" value="A" required>
+                    <span><strong>أ.</strong> {{ q.option_a }}</span>
+                </label>
+                {% endif %}
+                {% if q.option_b %}
+                <label class="option-label">
+                    <input type="radio" name="q_{{ q.pk }}" value="B">
+                    <span><strong>ب.</strong> {{ q.option_b }}</span>
+                </label>
+                {% endif %}
+                {% if q.option_c %}
+                <label class="option-label">
+                    <input type="radio" name="q_{{ q.pk }}" value="C">
+                    <span><strong>ج.</strong> {{ q.option_c }}</span>
+                </label>
+                {% endif %}
+                {% if q.option_d %}
+                <label class="option-label">
+                    <input type="radio" name="q_{{ q.pk }}" value="D">
+                    <span><strong>د.</strong> {{ q.option_d }}</span>
+                </label>
+                {% endif %}
+                {% else %}
+                <label class="option-label">
+                    <input type="radio" name="q_{{ q.pk }}" value="TRUE" required>
+                    <span>✅ صح</span>
+                </label>
+                <label class="option-label">
+                    <input type="radio" name="q_{{ q.pk }}" value="FALSE">
+                    <span>❌ خطأ</span>
+                </label>
+                {% endif %}
+            </div>
+            {% endfor %}
+
+            <div style="margin-top:28px;">
+                <button type="submit" class="btn btn-primary btn-lg w-full" style="font-size:1.05rem;"
+                        onclick="return confirm('هل أنت متأكد من تسليم الامتحان؟ لن تتمكن من تعديل إجاباتك.')">
+                    <i class="bi bi-send-fill"></i> تسليم الامتحان
+                </button>
+            </div>
+        </form>
+
+        <!-- التايمر والتقدم -->
+        <div>
+            <div class="timer-box">
+                <div style="font-size:.8rem;font-weight:700;color:var(--text-muted);margin-bottom:8px;">الوقت المتبقي</div>
+                <div class="timer-display" id="timer">{{ exam.duration_minutes }}:00</div>
+                <div style="margin-top:12px;font-size:.78rem;color:var(--text-muted);" id="progressText">
+                    0 / {{ questions.count }} أسئلة تمت
+                </div>
+                <div style="margin-top:8px;height:6px;background:var(--bg-muted);border-radius:99px;overflow:hidden;">
+                    <div id="progressBar" style="height:100%;background:var(--brand);border-radius:99px;width:0%;transition:width .3s;"></div>
+                </div>
+            </div>
+
+            <div style="background:var(--bg-surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:20px;margin-top:16px;">
+                <div style="font-weight:700;font-size:.875rem;color:var(--text-primary);margin-bottom:12px;">الأسئلة</div>
+                <div style="display:flex;flex-wrap:wrap;gap:6px;" id="questionNav">
+                    {% for q in questions %}
+                    <a href="#q{{ forloop.counter }}"
+                       style="width:36px;height:36px;border-radius:var(--r-sm);background:var(--bg-muted);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.8rem;color:var(--text-secondary);transition:all var(--t);"
+                       class="q-nav-btn" data-q="{{ forloop.counter }}">
+                        {{ forloop.counter }}
+                    </a>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Timer
+let totalSeconds = {{ exam.duration_minutes }} * 60;
+const timerEl = document.getElementById('timer');
+const timerInterval = setInterval(function() {
+    totalSeconds--;
+    if (totalSeconds <= 0) {
+        clearInterval(timerInterval);
+        document.getElementById('examForm').submit();
+        return;
+    }
+    const m = Math.floor(totalSeconds / 60);
+    const s = totalSeconds % 60;
+    timerEl.textContent = String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
+    timerEl.className = 'timer-display';
+    if (totalSeconds <= 300) timerEl.classList.add('warning');
+    if (totalSeconds <= 60) { timerEl.classList.remove('warning'); timerEl.classList.add('danger'); }
+}, 1000);
+
+// Progress tracking
+const totalQ = {{ questions.count }};
+const progressText = document.getElementById('progressText');
+const progressBar = document.getElementById('progressBar');
+
+function updateProgress() {
+    let answered = 0;
+    {% for q in questions %}
+    if (document.querySelector('input[name="q_{{ q.pk }}"]:checked')) answered++;
+    {% endfor %}
+    progressText.textContent = answered + ' / ' + totalQ + ' أسئلة تمت';
+    progressBar.style.width = (answered / totalQ * 100) + '%';
+
+    // Update nav buttons
+    {% for q in questions %}
+    const navBtn{{ forloop.counter }} = document.querySelector('.q-nav-btn[data-q="{{ forloop.counter }}"]');
+    if (document.querySelector('input[name="q_{{ q.pk }}"]:checked')) {
+        navBtn{{ forloop.counter }}.style.background = 'rgba(34,197,94,.1)';
+        navBtn{{ forloop.counter }}.style.borderColor = 'rgba(34,197,94,.3)';
+        navBtn{{ forloop.counter }}.style.color = '#16a34a';
+    }
+    {% endfor %}
+}
+document.querySelectorAll('input[type="radio"]').forEach(r => r.addEventListener('change', updateProgress));
+</script>
+{% endblock %}

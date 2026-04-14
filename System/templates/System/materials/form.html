@@ -1,0 +1,204 @@
+{% extends 'System/base.html' %}
+{% block title %}إضافة مادة تعليمية — A-To-Z{% endblock %}
+
+{% block extra_css %}
+<style>
+/* ==========================================================================
+   PAGE HEADER
+   ========================================================================== */
+.form-header-bg {
+    background: linear-gradient(180deg, var(--bg-surface) 0%, var(--bg-base) 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 48px 0 40px;
+    margin-bottom: 40px;
+}
+
+.form-page-title {
+    font-family: 'Syne', 'Cairo', 'Alexandria', sans-serif;
+    font-weight: 800;
+    font-size: clamp(1.8rem, 3vw, 2.2rem);
+    letter-spacing: -0.02em;
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.icon-wrapper-header {
+    width: 48px;
+    height: 48px;
+    background: rgba(14,165,233,0.1);
+    color: var(--brand);
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4rem;
+}
+
+/* ==========================================================================
+   FORM SECTIONS
+   ========================================================================== */
+.form-section {
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: var(--r-xl);
+    padding: 32px;
+    margin-bottom: 24px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.02);
+    transition: all 0.3s ease;
+}
+
+.form-section:hover {
+    box-shadow: 0 10px 30px rgba(0,0,0,0.04);
+    border-color: rgba(14,165,233,0.15);
+}
+
+.form-section-title {
+    font-family: 'Alexandria', sans-serif;
+    font-size: 1.15rem;
+    font-weight: 800;
+    color: var(--text-primary);
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border);
+}
+
+.form-section-title i {
+    color: var(--brand);
+    font-size: 1.3rem;
+}
+
+/* ==========================================================================
+   CUSTOM INPUTS (UPLOAD)
+   ========================================================================== */
+.upload-zone {
+    border: 2px dashed var(--border-strong);
+    border-radius: var(--r-md);
+    padding: 40px 24px;
+    text-align: center;
+    background: var(--bg-muted);
+    transition: all 0.3s ease;
+}
+
+.upload-zone:hover, .upload-zone:focus-within {
+    border-color: var(--brand);
+    background: rgba(14,165,233,0.03);
+}
+
+.upload-zone input[type="file"] {
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    max-width: 100%;
+    margin-top: 16px;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="form-header-bg">
+    <div class="container-sm">
+        <h1 class="form-page-title">
+            <div class="icon-wrapper-header">
+                <i class="bi bi-folder-plus"></i>
+            </div>
+            <span data-ar="إضافة مادة تعليمية" data-en="Add Learning Material">إضافة مادة تعليمية</span>
+        </h1>
+        <p class="text-secondary mt-2" style="font-size: 0.95rem; font-weight: 600; display: flex; align-items: center; gap: 6px;">
+            <i class="bi bi-journal-bookmark-fill" style="color: var(--brand);"></i> 
+            <span data-ar="كورس:" data-en="Course:">كورس:</span> {{ course.title }}
+        </p>
+    </div>
+</div>
+
+<div class="container-sm pb-12">
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        {% if form.errors %}
+        <div class="alert alert-danger mb-6">
+            <i class="bi bi-exclamation-triangle-fill" style="font-size: 1.4rem;"></i>
+            <div>
+                <strong data-ar="يرجى مراجعة الأخطاء التالية:" data-en="Please review the following errors:">يرجى مراجعة الأخطاء التالية:</strong>
+                <ul style="margin-top: 8px; margin-inline-start: 16px; font-size: 0.9rem;">
+                    {% for field in form %}
+                        {% for error in field.errors %}
+                            <li><strong>{{ field.label }}:</strong> {{ error }}</li>
+                        {% endfor %}
+                    {% endfor %}
+                    {% for error in form.non_field_errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+        {% endif %}
+
+        <div class="form-section">
+            <div class="form-section-title">
+                <i class="bi bi-info-square-fill"></i>
+                <span data-ar="البيانات الأساسية" data-en="Basic Details">البيانات الأساسية</span>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label" data-ar="عنوان المادة *" data-en="Material Title *">عنوان المادة *</label>
+                {{ form.title }}
+            </div>
+            
+            <div class="grid grid-2 mt-4">
+                <div class="form-group mb-0">
+                    <label class="form-label" data-ar="نوع المادة *" data-en="Material Type *">نوع المادة *</label>
+                    {{ form.material_type }}
+                </div>
+                <div class="form-group mb-0">
+                    <label class="form-label" data-ar="الترتيب (Order)" data-en="Order">الترتيب (Order)</label>
+                    {{ form.order }}
+                </div>
+            </div>
+
+            <div class="form-group mt-4 mb-0">
+                <label class="form-label" data-ar="وصف المادة (اختياري)" data-en="Description (Optional)">وصف المادة (اختياري)</label>
+                {{ form.description }}
+            </div>
+        </div>
+
+        <div class="form-section">
+            <div class="form-section-title">
+                <i class="bi bi-cloud-arrow-up-fill"></i>
+                <span data-ar="محتوى المادة" data-en="Material Content">محتوى المادة</span>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label" data-ar="رفع ملف (اختياري)" data-en="Upload File (Optional)">رفع ملف (اختياري)</label>
+                <div class="upload-zone">
+                    <i class="bi bi-file-earmark-arrow-up-fill text-brand" style="font-size: 2.5rem; opacity: 0.8;"></i>
+                    <div style="font-weight: 600; margin-top: 12px; color: var(--text-primary);" data-ar="اختر ملفاً من جهازك" data-en="Choose a file from your device">اختر ملفاً من جهازك</div>
+                    <p class="text-muted text-sm mt-2" data-ar="(PDF, مستندات، صور، فيديوهات قصيرة)" data-en="(PDF, Documents, Images, Short videos)">(PDF, مستندات، صور، فيديوهات قصيرة)</p>
+                    <div style="max-width: 300px; margin: 0 auto;">
+                        {{ form.file }}
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-group mb-0 mt-4">
+                <label class="form-label" data-ar="أو إضافة رابط (اختياري)" data-en="Or Add URL (Optional)">أو إضافة رابط خارجي (اختياري)</label>
+                {{ form.url }}
+                <div class="text-xs text-muted mt-2" data-ar="استخدم هذه الخانة إذا كنت تريد ربط فيديو من يوتيوب أو ملف درايف." data-en="Use this field if you want to link a YouTube video or Drive file.">استخدم هذه الخانة إذا كنت تريد ربط فيديو من يوتيوب أو ملف درايف.</div>
+            </div>
+        </div>
+
+        <div style="display:flex; gap:16px; margin-top:32px; padding-top: 24px; border-top: 1px solid var(--border);">
+            <button type="submit" class="btn btn-primary btn-lg" style="min-width: 200px;">
+                <i class="bi bi-plus-circle-fill"></i> <span style="margin-inline-start: 4px;" data-ar="إضافة المادة" data-en="Add Material">إضافة المادة</span>
+            </button>
+            <a href="{% url 'course_detail' course.pk %}" class="btn btn-ghost btn-lg">
+                <span data-ar="إلغاء والعودة" data-en="Cancel & Return">إلغاء والعودة</span>
+            </a>
+        </div>
+    </form>
+</div>
+{% endblock %}

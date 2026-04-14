@@ -1,0 +1,67 @@
+<footer class="footer-pro">
+    <div class="container">
+        <div class="footer-grid">
+            <div>
+                <a href="{% url 'home' %}" class="nav-logo" style="margin-bottom: 16px; display: inline-flex;">
+                    <div class="nav-logo-icon"><i class="bi bi-mortarboard-fill"></i></div>
+                    <span class="nav-logo-text" data-ar="A-To-Z" data-en="A-To-Z">A-To-Z</span>
+                </a>
+                <p class="footer-desc" data-ar="منصتك الأولى للتعلم عن بُعد. نوفر لك أفضل المدرسين والمواد التعليمية لتحقيق أهدافك الأكاديمية بكل سهولة واحترافية." data-en="Your premier e-learning platform. We provide top teachers and educational materials to help you achieve your academic goals.">
+                    منصتك الأولى للتعلم عن بُعد. نوفر لك أفضل المدرسين والمواد التعليمية لتحقيق أهدافك الأكاديمية بكل سهولة واحترافية.
+                </p>
+                <div class="footer-socials">
+                    <a href="#" class="social-icon" aria-label="Facebook"><i class="bi bi-facebook"></i></a>
+                    <a href="#" class="social-icon" aria-label="Twitter"><i class="bi bi-twitter-x"></i></a>
+                    <a href="#" class="social-icon" aria-label="Instagram"><i class="bi bi-instagram"></i></a>
+                    <a href="#" class="social-icon" aria-label="LinkedIn"><i class="bi bi-linkedin"></i></a>
+                </div>
+            </div>
+
+            <div>
+                <h3 class="footer-heading" data-ar="روابط سريعة" data-en="Quick Links">روابط سريعة</h3>
+                <ul class="footer-links">
+                    <li><a href="{% url 'home' %}" data-ar="الرئيسية" data-en="Home">الرئيسية</a></li>
+                    <li><a href="{% url 'course_list' %}" data-ar="تصفح الكورسات" data-en="Browse Courses">تصفح الكورسات</a></li>
+                    <li><a href="#" data-ar="من نحن" data-en="About Us">من نحن</a></li>
+                    <li><a href="#" data-ar="تواصل معنا" data-en="Contact Us">تواصل معنا</a></li>
+                </ul>
+            </div>
+
+            <div>
+                <h3 class="footer-heading" data-ar="المنصة" data-en="Platform">المنصة</h3>
+                <ul class="footer-links">
+                    {% if user.is_authenticated %}
+                    <li><a href="{% url 'dashboard' %}" data-ar="لوحة التحكم" data-en="Dashboard">لوحة التحكم</a></li>
+                    <li><a href="{% url 'profile' %}" data-ar="الملف الشخصي" data-en="Profile">الملف الشخصي</a></li>
+                    {% else %}
+                    <li><a href="{% url 'login' %}" data-ar="تسجيل الدخول" data-en="Sign In">تسجيل الدخول</a></li>
+                    <li><a href="{% url 'register' %}" data-ar="إنشاء حساب" data-en="Create Account">إنشاء حساب</a></li>
+                    {% endif %}
+                    <li><a href="#" data-ar="الأسئلة الشائعة" data-en="FAQ">الأسئلة الشائعة</a></li>
+                </ul>
+            </div>
+
+            <div>
+                <h3 class="footer-heading" data-ar="النشرة البريدية" data-en="Newsletter">النشرة البريدية</h3>
+                <p class="footer-desc" data-ar="اشترك ليصلك كل جديد عن كورساتنا وعروضنا الحصرية." data-en="Subscribe to receive updates about our new courses and exclusive offers.">
+                    اشترك ليصلك كل جديد عن كورساتنا وعروضنا الحصرية.
+                </p>
+                <form class="flex gap-2">
+                    <input type="email" class="form-control" placeholder="example@a-to-z.com" required style="padding: 8px 12px;">
+                    <button type="submit" class="btn btn-primary" style="padding: 8px 14px;"><i class="bi bi-send-fill"></i></button>
+                </form>
+            </div>
+        </div>
+
+        <div class="footer-bottom">
+            <span data-ar="© 2025 منصة A-To-Z. جميع الحقوق محفوظة." data-en="© 2025 A-To-Z Platform. All rights reserved.">
+                © 2025 منصة A-To-Z. جميع الحقوق محفوظة.
+            </span>
+            <div class="footer-bottom-links">
+                <a href="#" data-ar="الشروط والأحكام" data-en="Terms of Service">الشروط والأحكام</a>
+                <span style="opacity: 0.4; font-size: 0.5rem;"><i class="bi bi-circle-fill"></i></span>
+                <a href="#" data-ar="سياسة الخصوصية" data-en="Privacy Policy">سياسة الخصوصية</a>
+            </div>
+        </div>
+    </div>
+</footer>

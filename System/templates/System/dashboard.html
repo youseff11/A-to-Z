@@ -1,0 +1,472 @@
+{% extends 'System/base.html' %}
+{% block title %}Dashboard — A-To-Z{% endblock %}
+
+{% block extra_css %}
+<style>
+/* ==========================================================================
+   DASHBOARD HEADER
+   ========================================================================== */
+.dash-greeting {
+    background: linear-gradient(180deg, var(--bg-surface) 0%, var(--bg-base) 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 48px 0 40px;
+    margin-bottom: 40px;
+}
+
+.greeting-subtitle {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 14px;
+    background: var(--bg-subtle);
+    border: 1px solid var(--border);
+    border-radius: 99px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin-bottom: 16px;
+}
+
+.greeting-title {
+    font-family: 'Syne', 'Cairo', 'Alexandria', sans-serif;
+    font-weight: 800;
+    font-size: clamp(1.8rem, 3vw, 2.2rem);
+    letter-spacing: -0.02em;
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.greeting-username {
+    color: var(--brand);
+    unicode-bidi: embed; /* يمنع تداخل النصوص العربية مع الإنجليزية */
+}
+
+/* ==========================================================================
+   STATS CARDS
+   ========================================================================== */
+.stat-card-pro {
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: var(--r-xl);
+    padding: 28px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.02);
+}
+
+.stat-card-pro:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 30px rgba(0,0,0,0.06);
+    border-color: rgba(14,165,233,0.2);
+}
+
+.stat-icon-pro {
+    width: 60px;
+    height: 60px;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.6rem;
+    flex-shrink: 0;
+}
+
+.stat-value-pro {
+    font-family: 'Outfit', 'Syne', sans-serif;
+    font-size: 2rem;
+    font-weight: 800;
+    line-height: 1.1;
+    color: var(--text-primary);
+}
+
+.stat-label-pro {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    font-weight: 600;
+    margin-top: 4px;
+}
+
+/* ==========================================================================
+   COURSE & MEETING ROWS
+   ========================================================================== */
+.list-row-pro {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 20px;
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: var(--r-lg);
+    margin-bottom: 12px;
+    transition: all 0.3s ease;
+}
+
+.list-row-pro:hover {
+    border-color: var(--brand);
+    box-shadow: 0 8px 24px rgba(14,165,233,0.08);
+    transform: scale(1.01);
+}
+
+.row-icon-box {
+    width: 52px;
+    height: 52px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.3rem;
+    flex-shrink: 0;
+}
+
+.row-title {
+    font-weight: 700;
+    font-size: 1.05rem;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+}
+
+.row-subtitle {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    font-weight: 500;
+}
+
+/* Calendar Date Badge for Meetings */
+.meeting-date-badge {
+    min-width: 75px;
+    background: var(--bg-muted);
+    border: 1px solid var(--border-strong);
+    border-radius: 12px;
+    overflow: hidden;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+}
+
+.meeting-date-head {
+    background: rgba(14,165,233,0.1);
+    color: var(--brand);
+    font-size: 0.7rem;
+    font-weight: 800;
+    padding: 4px 0;
+    text-transform: uppercase;
+}
+
+.meeting-date-body {
+    padding: 6px 0 8px;
+    background: var(--bg-surface);
+}
+
+.meeting-time {
+    font-size: 1.1rem;
+    font-weight: 800;
+    font-family: 'Outfit', sans-serif;
+    color: var(--text-primary);
+    line-height: 1;
+}
+
+.meeting-ampm {
+    font-size: 0.65rem;
+    color: var(--text-muted);
+    font-weight: 600;
+    margin-top: 2px;
+}
+
+/* ==========================================================================
+   EMPTY STATES
+   ========================================================================== */
+.empty-state-premium {
+    background: rgba(14,165,233,0.02);
+    border: 2px dashed var(--border-strong);
+    border-radius: var(--r-xl);
+    padding: 56px 24px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    transition: all 0.3s ease;
+}
+
+.empty-state-premium:hover {
+    border-color: var(--brand);
+    background: rgba(14,165,233,0.04);
+}
+
+.empty-icon-premium {
+    width: 72px;
+    height: 72px;
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.8rem;
+    color: var(--text-muted);
+    box-shadow: 0 8px 16px rgba(0,0,0,0.04);
+}
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="dash-greeting">
+    <div class="container">
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:20px;">
+            <div>
+                <div class="greeting-subtitle">
+                    <i class="bi bi-person-badge"></i>
+                    {% if user.role == 'teacher' %}
+                    <span data-ar="لوحة تحكم المدرس" data-en="Teacher Dashboard">لوحة تحكم المدرس</span>
+                    {% else %}
+                    <span data-ar="لوحة تحكم الطالب" data-en="Student Dashboard">لوحة تحكم الطالب</span>
+                    {% endif %}
+                </div>
+                <h1 class="greeting-title">
+                    <span data-ar="مرحباً،" data-en="Welcome,">مرحباً،</span>
+                    <span class="greeting-username">{{ user.get_full_name|default:user.username }}</span> 
+                    <span style="animation: wave 2.5s infinite transform-origin: 70% 70%; display: inline-block;"></span>
+                </h1>
+            </div>
+            
+            <div class="flex gap-3">
+                {% if user.role == 'teacher' %}
+                <a href="{% url 'course_create' %}" class="btn btn-primary btn-lg" style="border-radius: 12px;">
+                    <i class="bi bi-plus-lg"></i>
+                    <span data-ar="كورس جديد" data-en="New Course">كورس جديد</span>
+                </a>
+                {% else %}
+                <a href="{% url 'course_list' %}" class="btn btn-primary btn-lg" style="border-radius: 12px;">
+                    <i class="bi bi-compass"></i>
+                    <span data-ar="تصفح الكورسات" data-en="Explore Courses">تصفح الكورسات</span>
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container pb-12">
+
+    {% if user.role == 'teacher' %}
+    <div class="grid grid-3 mb-8">
+        <div class="stat-card-pro">
+            <div class="stat-icon-pro" style="background:rgba(14,165,233,.1);color:var(--brand);">
+                <i class="bi bi-journal-album"></i>
+            </div>
+            <div>
+                <div class="stat-value-pro">{{ courses.count }}</div>
+                <div class="stat-label-pro" data-ar="كورساتك الحالية" data-en="Your Courses">كورساتك الحالية</div>
+            </div>
+        </div>
+        <div class="stat-card-pro">
+            <div class="stat-icon-pro" style="background:rgba(34,197,94,.1);color:var(--success);">
+                <i class="bi bi-people-fill"></i>
+            </div>
+            <div>
+                <div class="stat-value-pro">{{ total_students }}</div>
+                <div class="stat-label-pro" data-ar="إجمالي الطلاب" data-en="Total Students">إجمالي الطلاب</div>
+            </div>
+        </div>
+        <div class="stat-card-pro">
+            <div class="stat-icon-pro" style="background:rgba(124,58,237,.1);color:#7c3aed;">
+                <i class="bi bi-camera-video-fill"></i>
+            </div>
+            <div>
+                <div class="stat-value-pro">{{ upcoming_meetings.count }}</div>
+                <div class="stat-label-pro" data-ar="اجتماعات قادمة" data-en="Upcoming Meetings">اجتماعات قادمة</div>
+            </div>
+        </div>
+    </div>
+
+    {% if pending_enrollments %}
+    <div class="section-header mb-4">
+        <h2 class="section-title">
+            <i class="bi bi-clock-history text-warning" style="margin-inline-end: 6px;"></i>
+            <span data-ar="طلبات انضمام معلقة" data-en="Pending Requests">طلبات انضمام معلقة</span>
+        </h2>
+    </div>
+
+    <div class="grid grid-2 mb-8">
+        {% for req in pending_enrollments %}
+        <div class="list-row-pro">
+            <div class="row-icon-box" style="background: rgba(245, 158, 11, 0.1); color: var(--warning);">
+                <i class="bi bi-receipt"></i>
+            </div>
+            <div style="flex:1; min-width:0;">
+                <div class="row-title" style="unicode-bidi: embed;">{{ req.student.get_full_name|default:req.student.username }}</div>
+                <div class="row-subtitle">كورس: {{ req.course.title }}</div>
+            </div>
+            <div class="flex gap-2">
+                {% if req.payment_receipt %}
+                <a href="{{ req.payment_receipt.url }}" target="_blank" class="btn btn-secondary btn-sm" title="عرض الإيصال"><i class="bi bi-image"></i></a>
+                {% endif %}
+                <a href="{% url 'approve_enrollment' req.id %}?action=approve" class="btn btn-success btn-sm" title="قبول"><i class="bi bi-check-lg"></i></a>
+                <a href="{% url 'approve_enrollment' req.id %}?action=reject" class="btn btn-danger btn-sm" title="رفض"><i class="bi bi-x-lg"></i></a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="section-header mb-6">
+        <h2 class="section-title" data-ar="إدارة الكورسات" data-en="Manage Courses">إدارة الكورسات</h2>
+        <a href="{% url 'course_create' %}" class="btn btn-ghost btn-sm" style="border-radius: 8px;">
+            <i class="bi bi-plus-lg"></i>
+            <span data-ar="إضافة كورس" data-en="Add Course">إضافة كورس</span>
+        </a>
+    </div>
+
+    {% for course in courses %}
+    <div class="list-row-pro">
+        <div class="row-icon-box" style="background:{% cycle 'rgba(14,165,233,.1)' 'rgba(124,58,237,.1)' 'rgba(34,197,94,.1)' 'rgba(249,115,22,.1)' %};color:{% cycle 'var(--brand)' '#7c3aed' 'var(--success)' 'var(--accent)' %};">
+            <i class="bi bi-book-half"></i>
+        </div>
+        <div style="flex:1;min-width:0;">
+            <div class="row-title">{{ course.title }}</div>
+            <div class="row-subtitle">
+                <i class="bi bi-people" style="margin-inline-end: 4px;"></i>
+                {{ course.get_enrolled_count }} <span data-ar="طالب مسجل" data-en="enrolled">طالب مسجل</span>
+            </div>
+        </div>
+        
+        <span class="badge {% if course.is_published %}badge-green{% else %}badge-gray{% endif %}" style="padding: 6px 12px;">
+            {% if course.is_published %}
+                <i class="bi bi-check-circle-fill"></i> <span data-ar="منشور" data-en="Published">منشور</span>
+            {% else %}
+                <i class="bi bi-clock-fill"></i> <span data-ar="مسودة" data-en="Draft">مسودة</span>
+            {% endif %}
+        </span>
+        
+        <div style="display:flex;gap:8px; margin-inline-start: 16px;">
+            <a href="{% url 'course_detail' course.pk %}" class="btn btn-secondary btn-sm" title="{% if LANG == 'ar' %}عرض{% else %}View{% endif %}"><i class="bi bi-eye"></i></a>
+            <a href="{% url 'course_edit' course.pk %}" class="btn btn-secondary btn-sm" title="{% if LANG == 'ar' %}تعديل{% else %}Edit{% endif %}"><i class="bi bi-pencil"></i></a>
+            <a href="{% url 'meeting_create' course.pk %}" class="btn btn-primary btn-sm" title="{% if LANG == 'ar' %}اجتماع جديد{% else %}New Meeting{% endif %}"><i class="bi bi-camera-video-fill"></i></a>
+        </div>
+    </div>
+    {% empty %}
+    <div class="empty-state-premium">
+        <div class="empty-icon-premium"><i class="bi bi-folder-plus"></i></div>
+        <div>
+            <h3 style="font-family:'Syne','Cairo',sans-serif;font-weight:800;font-size:1.2rem;color:var(--text-primary);margin-bottom:8px;" data-ar="لا توجد كورسات بعد" data-en="No Courses Yet">لا توجد كورسات بعد</h3>
+            <p style="color:var(--text-secondary);font-size:0.95rem;max-width:300px;margin:0 auto;" data-ar="ابدأ رحلتك التعليمية وأضف كورس جديد لطلابك." data-en="Start your teaching journey and add a new course.">ابدأ رحلتك التعليمية وأضف كورس جديد لطلابك.</p>
+        </div>
+        <a href="{% url 'course_create' %}" class="btn btn-primary btn-lg mt-2" style="border-radius:12px;">
+            <span data-ar="أنشئ أول كورس لك" data-en="Create Your First Course">أنشئ أول كورس لك</span>
+            <i class="bi bi-arrow-left"></i>
+        </a>
+    </div>
+    {% endfor %}
+
+
+    {% else %}
+    <div class="grid grid-2 mb-8">
+        <div class="stat-card-pro">
+            <div class="stat-icon-pro" style="background:rgba(14,165,233,.1);color:var(--brand);">
+                <i class="bi bi-journal-check"></i>
+            </div>
+            <div>
+                <div class="stat-value-pro">{{ enrollments.count }}</div>
+                <div class="stat-label-pro" data-ar="كورسات مشترك بها" data-en="Enrolled Courses">كورسات مشترك بها</div>
+            </div>
+        </div>
+        <div class="stat-card-pro">
+            <div class="stat-icon-pro" style="background:rgba(124,58,237,.1);color:#7c3aed;">
+                <i class="bi bi-camera-video-fill"></i>
+            </div>
+            <div>
+                <div class="stat-value-pro">{{ upcoming_meetings.count }}</div>
+                <div class="stat-label-pro" data-ar="اجتماعات قادمة" data-en="Upcoming Meetings">اجتماعات قادمة</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="section-header mb-6">
+        <h2 class="section-title" data-ar="متابعة التعلم" data-en="Continue Learning">متابعة التعلم</h2>
+        <a href="{% url 'course_list' %}" class="btn btn-ghost btn-sm" style="border-radius: 8px;">
+            <span data-ar="استكشف المزيد" data-en="Explore More">استكشف المزيد</span>
+            <i class="bi bi-arrow-left"></i>
+        </a>
+    </div>
+
+    {% for enrollment in enrollments %}
+    <div class="list-row-pro">
+        <div class="row-icon-box" style="background:linear-gradient(135deg, var(--brand), #38bdf8); color:#fff; box-shadow: 0 4px 12px rgba(14,165,233,0.3);">
+            <i class="bi bi-play-fill"></i>
+        </div>
+        <div style="flex:1;min-width:0;">
+            <div class="row-title">{{ enrollment.course.title }}</div>
+            <div class="row-subtitle">
+                <i class="bi bi-person-video3" style="margin-inline-end: 4px;"></i>
+                <span data-ar="بواسطة:" data-en="By:">بواسطة:</span> <span style="font-weight: 700; color:var(--text-primary); unicode-bidi: embed;">{{ enrollment.course.teacher.get_full_name }}</span>
+            </div>
+        </div>
+        
+        <a href="{% url 'course_detail' enrollment.course.pk %}" class="btn btn-primary" style="border-radius: 10px; padding: 10px 20px;">
+            <span data-ar="أكمل الكورس" data-en="Continue">أكمل الكورس</span>
+        </a>
+    </div>
+    {% empty %}
+    <div class="empty-state-premium">
+        <div class="empty-icon-premium"><i class="bi bi-search"></i></div>
+        <div>
+            <h3 style="font-family:'Syne','Cairo',sans-serif;font-weight:800;font-size:1.2rem;color:var(--text-primary);margin-bottom:8px;" data-ar="لم تشترك في أي كورس بعد" data-en="No Enrolled Courses">لم تشترك في أي كورس بعد</h3>
+            <p style="color:var(--text-secondary);font-size:0.95rem;max-width:300px;margin:0 auto;" data-ar="تصفح المنصة لاكتشاف الكورسات التي تناسبك وابدأ التعلم الآن." data-en="Browse the platform to discover courses that suit you and start learning.">تصفح المنصة لاكتشاف الكورسات التي تناسبك وابدأ التعلم الآن.</p>
+        </div>
+        <a href="{% url 'course_list' %}" class="btn btn-primary btn-lg mt-2" style="border-radius:12px;">
+            <span data-ar="استكشف الكورسات" data-en="Explore Courses">استكشف الكورسات</span>
+            <i class="bi bi-arrow-left"></i>
+        </a>
+    </div>
+    {% endfor %}
+    {% endif %}
+
+    {% if upcoming_meetings %}
+    <div class="section-header mt-12 mb-6">
+        <h2 class="section-title">
+            <i class="bi bi-camera-video-fill" style="color:var(--brand); margin-inline-end: 6px;"></i>
+            <span data-ar="الاجتماعات القادمة" data-en="Upcoming Meetings">الاجتماعات القادمة</span>
+        </h2>
+    </div>
+    
+    <div class="grid grid-2" style="gap:16px;">
+        {% for meeting in upcoming_meetings %}
+        <div class="list-row-pro" style="padding: 16px;">
+            <div class="meeting-date-badge">
+                <div class="meeting-date-head">{{ meeting.scheduled_at|date:"M" }}</div>
+                <div class="meeting-date-body">
+                    <div class="meeting-time">{{ meeting.scheduled_at|time:"h:i" }}</div>
+                    <div class="meeting-ampm">{{ meeting.scheduled_at|time:"A" }}</div>
+                </div>
+            </div>
+            
+            <div style="flex:1;min-width:0;">
+                <div class="row-title" style="font-size: 1rem;">{{ meeting.title }}</div>
+                <div class="row-subtitle">
+                    <i class="bi bi-book" style="margin-inline-end: 4px;"></i> {{ meeting.course.title }}
+                </div>
+            </div>
+            
+            {% if meeting.status == 'live' %}
+            <span class="badge badge-red" style="padding: 6px 12px; font-size: 0.8rem;">
+                <span class="live-dot" style="margin-inline-end:6px;width:8px;height:8px;"></span>
+                <span data-ar="مباشر الآن" data-en="Live Now">مباشر الآن</span>
+            </span>
+            {% endif %}
+            
+            <a href="{% url 'meeting_room' meeting.pk %}" class="btn {% if meeting.status == 'live' %}btn-primary{% else %}btn-secondary{% endif %}" style="border-radius: 10px;">
+                <span data-ar="انضمام" data-en="Join">انضمام</span>
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+</div>
+{% endblock %}

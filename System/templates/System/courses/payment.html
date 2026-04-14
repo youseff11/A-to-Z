@@ -1,0 +1,40 @@
+{% extends 'System/base.html' %}
+{% block title %}إتمام الاشتراك — {{ course.title }}{% endblock %}
+
+{% block content %}
+<div class="container py-8">
+    <div class="card" style="max-width: 600px; margin: 0 auto;">
+        <div class="card-body">
+            <h2 class="section-title text-center mb-6">تأكيد الاشتراك</h2>
+            
+            <div style="background: var(--bg-muted); padding: 16px; border-radius: var(--r-md); margin-bottom: 24px; text-align: center;">
+                <p class="text-secondary mb-2">قيمة الاشتراك في كورس <strong>{{ course.title }}</strong> هي:</p>
+                <h3 class="text-brand" style="font-size: 2rem;">{{ course.price }} جنيه</h3>
+            </div>
+
+            <div class="alert alert-info mb-6">
+                <i class="bi bi-info-circle-fill"></i>
+                <span>
+                    يرجى تحويل المبلغ على هذا الرقم: 
+                    <strong style="font-size: 1.1rem; color: var(--text-primary);">
+                        {{ course.teacher.payment_number|default:"الرقم غير متوفر حالياً" }}
+                    </strong> 
+                    <br>
+                    ثم قم برفع صورة الإيصال هنا.
+                </span>
+            </div>
+
+            <form method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label class="form-label">{{ form.payment_receipt.label }}</label>
+                    {{ form.payment_receipt }}
+                </div>
+                <button type="submit" class="btn btn-primary w-full btn-lg mt-4">
+                    <i class="bi bi-cloud-arrow-up-fill"></i> تأكيد ورفع الإيصال
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

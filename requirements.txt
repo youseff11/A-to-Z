@@ -1,0 +1,17 @@
+# الأساسيات
+Django==5.1.2
+asgiref==3.8.1
+sqlparse==0.5.1
+python-dotenv==1.0.1
+
+# قاعدة البيانات والصور
+mysql-connector-python==9.0.0
+Pillow==11.0.0
+django-resized==1.0.3
+
+# واجهة الإدارة (هذا هو قلب مشروعك حالياً)
+django-colorfield==0.14.0
+django-jazzmin @ git+https://github.com/farridav/django-jazzmin.git@d269874c96fe5ff6d231c3017cdd4650bc2f3105
+# الاتصال والـ API (لفيسبوك والإيميل)
+
+# أدوات مساعدة
